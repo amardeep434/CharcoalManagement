@@ -125,7 +125,10 @@ CharcoalBiz is a full-stack sales management application designed for charcoal b
 The application is designed with a clear separation of concerns, type safety throughout the stack, and a focus on developer experience while maintaining production readiness.
 
 ## Changelog
-- June 28, 2025. Initial setup
+- June 28, 2025: Initial setup
+- June 28, 2025: Added multi-company architecture with suppliers and purchase tracking
+- June 28, 2025: Integrated PostgreSQL database with Neon Database
+- June 28, 2025: Implemented database seeding and complete API structure
 
 ## User Preferences
 
