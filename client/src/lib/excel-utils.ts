@@ -25,9 +25,9 @@ export function validateExcelData(data: ExcelRow[]): { valid: ExcelRow[]; invali
       errors.push("Valid quantity is required");
     }
     
-    const ratePerTon = Number(row["Rate Per Ton"] || row.ratePerTon || row["Rate"]);
-    if (!ratePerTon || ratePerTon <= 0) {
-      errors.push("Valid rate per ton is required");
+    const ratePerKg = Number(row["Rate Per Kg"] || row.ratePerKg || row["Rate"]);
+    if (!ratePerKg || ratePerKg <= 0) {
+      errors.push("Valid rate per kg is required");
     }
     
     const totalAmount = Number(row["Total Amount"] || row.totalAmount || row["Amount"]);
@@ -58,7 +58,7 @@ export function formatExcelDataForImport(data: ExcelRow[]): any[] {
     hotelName: row["Hotel Name"] || row.hotelName,
     date: row["Date"] || row.date,
     quantity: Number(row["Quantity"] || row.quantity),
-    ratePerTon: Number(row["Rate Per Ton"] || row.ratePerTon || row["Rate"]),
+    ratePerKg: Number(row["Rate Per Kg"] || row.ratePerKg || row["Rate"]),
     totalAmount: Number(row["Total Amount"] || row.totalAmount || row["Amount"]),
     paymentStatus: row["Payment Status"] || row.paymentStatus,
     paymentDate: row["Payment Date"] || row.paymentDate,
@@ -73,19 +73,19 @@ export function generateSampleExcelData(): ExcelRow[] {
       "Hotel Name": "Grand Plaza Hotel",
       "Date": "2024-11-15",
       "Quantity": 5.5,
-      "Rate Per Ton": 4000,
-      "Total Amount": 22000,
+      "Rate Per Kg": 4.0,
+      "Total Amount": 22,
       "Payment Status": "Paid",
       "Payment Date": "2024-11-16",
-      "Payment Amount": 22000,
+      "Payment Amount": 22,
       "Notes": "Regular delivery"
     },
     {
       "Hotel Name": "Ocean View Resort",
       "Date": "2024-11-14",
       "Quantity": 8.2,
-      "Rate Per Ton": 4000,
-      "Total Amount": 32800,
+      "Rate Per Kg": 4.0,
+      "Total Amount": 32.8,
       "Payment Status": "Pending",
       "Payment Date": "",
       "Payment Amount": "",

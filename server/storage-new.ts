@@ -420,7 +420,7 @@ export class MemStorage implements IStorage {
       ...insertSale, 
       id,
       quantity: insertSale.quantity.toString(),
-      ratePerTon: insertSale.ratePerTon.toString(),
+      ratePerKg: insertSale.ratePerKg.toString(),
       totalAmount: insertSale.totalAmount.toString(),
       notes: insertSale.notes || null,
       createdAt: new Date(),
@@ -437,7 +437,7 @@ export class MemStorage implements IStorage {
       ...sale, 
       ...saleUpdate,
       quantity: saleUpdate.quantity ? saleUpdate.quantity.toString() : sale.quantity,
-      ratePerTon: saleUpdate.ratePerTon ? saleUpdate.ratePerTon.toString() : sale.ratePerTon,
+      ratePerKg: saleUpdate.ratePerKg ? saleUpdate.ratePerKg.toString() : sale.ratePerKg,
       totalAmount: saleUpdate.totalAmount ? saleUpdate.totalAmount.toString() : sale.totalAmount,
     };
     this.sales.set(id, updatedSale);
@@ -551,7 +551,7 @@ export class MemStorage implements IStorage {
       ...insertPurchase, 
       id,
       quantity: insertPurchase.quantity.toString(),
-      ratePerTon: insertPurchase.ratePerTon.toString(),
+      ratePerKg: insertPurchase.ratePerKg.toString(),
       totalAmount: insertPurchase.totalAmount.toString(),
       invoiceNumber: insertPurchase.invoiceNumber || null,
       notes: insertPurchase.notes || null,
@@ -569,7 +569,7 @@ export class MemStorage implements IStorage {
       ...purchase, 
       ...purchaseUpdate,
       quantity: purchaseUpdate.quantity ? purchaseUpdate.quantity.toString() : purchase.quantity,
-      ratePerTon: purchaseUpdate.ratePerTon ? purchaseUpdate.ratePerTon.toString() : purchase.ratePerTon,
+      ratePerKg: purchaseUpdate.ratePerKg ? purchaseUpdate.ratePerKg.toString() : purchase.ratePerKg,
       totalAmount: purchaseUpdate.totalAmount ? purchaseUpdate.totalAmount.toString() : purchase.totalAmount,
     };
     this.purchases.set(id, updatedPurchase);

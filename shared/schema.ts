@@ -46,8 +46,8 @@ export const sales = pgTable("sales", {
   companyId: integer("company_id").notNull().references(() => companies.id),
   hotelId: integer("hotel_id").notNull().references(() => hotels.id),
   date: timestamp("date", { mode: "date" }).notNull(),
-  quantity: decimal("quantity", { precision: 10, scale: 2 }).notNull(),
-  ratePerTon: decimal("rate_per_ton", { precision: 10, scale: 2 }).notNull(),
+  quantity: decimal("quantity", { precision: 10, scale: 2 }).notNull(), // in kg
+  ratePerKg: decimal("rate_per_kg", { precision: 10, scale: 2 }).notNull(), // rate per kg
   totalAmount: decimal("total_amount", { precision: 12, scale: 2 }).notNull(),
   notes: text("notes"),
   createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
@@ -69,8 +69,8 @@ export const purchases = pgTable("purchases", {
   companyId: integer("company_id").notNull().references(() => companies.id),
   supplierId: integer("supplier_id").notNull().references(() => suppliers.id),
   date: timestamp("date", { mode: "date" }).notNull(),
-  quantity: decimal("quantity", { precision: 10, scale: 2 }).notNull(),
-  ratePerTon: decimal("rate_per_ton", { precision: 10, scale: 2 }).notNull(),
+  quantity: decimal("quantity", { precision: 10, scale: 2 }).notNull(), // in kg
+  ratePerKg: decimal("rate_per_kg", { precision: 10, scale: 2 }).notNull(), // rate per kg
   totalAmount: decimal("total_amount", { precision: 12, scale: 2 }).notNull(),
   invoiceNumber: text("invoice_number"),
   notes: text("notes"),
@@ -223,7 +223,7 @@ export const excelImportSchema = z.object({
   hotelName: z.string().min(1, "Hotel name is required"),
   date: z.string().min(1, "Date is required"),
   quantity: z.number().positive("Quantity must be positive"),
-  ratePerTon: z.number().positive("Rate per ton must be positive"),
+  ratePerKg: z.number().positive("Rate per kg must be positive"),
   totalAmount: z.number().positive("Total amount must be positive"),
   paymentStatus: z.enum(["paid", "pending", "partial"]).optional(),
   paymentDate: z.string().optional(),
@@ -236,7 +236,7 @@ export const purchaseImportSchema = z.object({
   supplierName: z.string().min(1, "Supplier name is required"),
   date: z.string().min(1, "Date is required"),
   quantity: z.number().positive("Quantity must be positive"),
-  ratePerTon: z.number().positive("Rate per ton must be positive"),
+  ratePerKg: z.number().positive("Rate per kg must be positive"),
   totalAmount: z.number().positive("Total amount must be positive"),
   invoiceNumber: z.string().optional(),
   paymentStatus: z.enum(["paid", "pending", "partial"]).optional(),

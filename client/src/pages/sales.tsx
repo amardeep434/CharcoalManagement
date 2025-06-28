@@ -127,9 +127,9 @@ export default function Sales() {
                       <TableCell className="text-sm text-gray-900">
                         {format(new Date(sale.date), "MMM dd, yyyy")}
                       </TableCell>
-                      <TableCell className="text-sm text-gray-900">{sale.quantity} tons</TableCell>
+                      <TableCell className="text-sm text-gray-900">{sale.quantity} kg</TableCell>
                       <TableCell className="text-sm text-gray-900">
-                        {formatCurrency(Number(sale.ratePerTon))}
+                        {formatCurrency(Number(sale.ratePerKg))}
                       </TableCell>
                       <TableCell className="text-sm font-medium text-gray-900">
                         {formatCurrency(Number(sale.totalAmount))}

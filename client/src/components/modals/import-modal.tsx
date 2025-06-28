@@ -146,8 +146,8 @@ export function ImportModal({ open, onOpenChange }: ImportModalProps) {
           <div className="p-4 bg-gray-50 rounded-lg">
             <h5 className="text-sm font-medium text-gray-900 mb-2">Expected Excel Format:</h5>
             <div className="text-xs text-gray-600 space-y-1">
-              <p><strong>Columns:</strong> Hotel Name, Date, Quantity, Rate Per Ton, Total Amount, Payment Status, Payment Date, Payment Amount</p>
-              <p><strong>Example:</strong> Grand Plaza Hotel, 2024-11-15, 5.5, 4000, 22000, Paid, 2024-11-16, 22000</p>
+              <p><strong>Columns:</strong> Hotel Name, Date, Quantity, Rate Per Kg, Total Amount, Payment Status, Payment Date, Payment Amount</p>
+              <p><strong>Example:</strong> Grand Plaza Hotel, 2024-11-15, 5.5, 4.0, 22, Paid, 2024-11-16, 22</p>
             </div>
           </div>
 

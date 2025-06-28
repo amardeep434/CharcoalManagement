@@ -184,8 +184,8 @@ export default function Statements() {
                           {statement.sales.map((sale: SaleWithHotel) => (
                             <TableRow key={sale.id}>
                               <TableCell>{format(new Date(sale.date), "MMM dd, yyyy")}</TableCell>
-                              <TableCell>{sale.quantity} tons</TableCell>
-                              <TableCell>{formatCurrency(Number(sale.ratePerTon))}</TableCell>
+                              <TableCell>{sale.quantity} kg</TableCell>
+                              <TableCell>{formatCurrency(Number(sale.ratePerKg))}</TableCell>
                               <TableCell className="font-medium">{formatCurrency(Number(sale.totalAmount))}</TableCell>
                               <TableCell className="text-green-600">{formatCurrency(sale.paidAmount)}</TableCell>
                               <TableCell className="text-red-600">{formatCurrency(sale.pendingAmount)}</TableCell>

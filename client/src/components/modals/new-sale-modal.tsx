@@ -37,7 +37,7 @@ export function NewSaleModal({ open, onOpenChange }: NewSaleModalProps) {
     defaultValues: {
       date: new Date().toISOString().split('T')[0],
       quantity: 0,
-      ratePerTon: 4000,
+      ratePerKg: "4",
       totalAmount: 0,
       notes: "",
     },
@@ -68,10 +68,10 @@ export function NewSaleModal({ open, onOpenChange }: NewSaleModalProps) {
   });
 
   const quantity = form.watch("quantity");
-  const ratePerTon = form.watch("ratePerTon");
+  const ratePerKg = form.watch("ratePerKg");
 
   // Auto-calculate total amount
-  const totalAmount = quantity * ratePerTon;
+  const totalAmount = quantity * parseFloat(ratePerKg || "0");
   form.setValue("totalAmount", totalAmount);
 
   const onSubmit = (data: NewSaleForm) => {
@@ -157,16 +157,17 @@ export function NewSaleModal({ open, onOpenChange }: NewSaleModalProps) {
             <div className="grid grid-cols-2 gap-4">
               <FormField
                 control={form.control}
-                name="ratePerTon"
+                name="ratePerKg"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Rate per ton (₹)</FormLabel>
+                    <FormLabel>Rate per kg (₹)</FormLabel>
                     <FormControl>
                       <Input
                         type="number"
-                        placeholder="4000"
+                        step="0.01"
+                        placeholder="4.00"
                         {...field}
-                        onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                        onChange={(e) => field.onChange(e.target.value)}
                       />
                     </FormControl>
                     <FormMessage />
