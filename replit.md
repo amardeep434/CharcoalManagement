@@ -31,18 +31,26 @@ CharcoalBiz is a full-stack sales management application designed for charcoal b
 ## Key Components
 
 ### Database Schema
-- **Hotels Table**: Stores hotel information with unique codes, contact details, and active status
-- **Sales Table**: Records sales transactions with quantity, rates, and totals
+- **Companies Table**: Stores charcoal business information with company codes, contact details, and tax IDs
+- **Suppliers Table**: Manages charcoal supplier information for purchase tracking
+- **Hotels Table**: Stores hotel customer information with unique codes, contact details, and active status
+- **Sales Table**: Records sales transactions to hotels with quantity, rates, and company associations
 - **Payments Table**: Tracks payment records linked to specific sales
-- **Relationships**: Foreign key constraints maintaining data integrity
+- **Purchases Table**: Records charcoal purchases from suppliers with invoice tracking
+- **Purchase Payments Table**: Tracks payment records for supplier purchases
+- **Relationships**: Foreign key constraints maintaining data integrity across all entities
 
 ### API Structure
-- **Hotels API**: CRUD operations for hotel management
-- **Sales API**: Sales record management with hotel relationships
-- **Payments API**: Payment tracking and processing
-- **Dashboard API**: Aggregated statistics and recent activity
-- **Import API**: Excel file processing for bulk data entry
-- **Export API**: Statement generation for hotels
+- **Companies API**: CRUD operations for multi-company management with statistics
+- **Suppliers API**: Supplier management with purchase statistics
+- **Hotels API**: Hotel customer management with sales statistics
+- **Sales API**: Sales record management with hotel and company relationships
+- **Payments API**: Payment tracking and processing for sales
+- **Purchases API**: Purchase record management with supplier relationships
+- **Purchase Payments API**: Payment tracking for supplier purchases
+- **Dashboard API**: Aggregated statistics and recent activity with company filtering
+- **Import API**: Excel file processing for bulk data entry supporting multi-company
+- **Export API**: Statement generation for hotels and suppliers
 
 ### Frontend Pages
 - **Dashboard**: Overview with stats cards and recent sales
