@@ -1,0 +1,124 @@
+# CharcoalBiz - Sales Management System
+
+## Overview
+
+CharcoalBiz is a full-stack sales management application designed for charcoal businesses to track sales, manage hotel customers, process payments, and generate statements. The system provides a comprehensive dashboard with real-time analytics and supports data import/export functionality.
+
+## System Architecture
+
+### Frontend Architecture
+- **Framework**: React 18 with TypeScript
+- **Build Tool**: Vite for fast development and optimized production builds
+- **Routing**: Wouter for lightweight client-side routing
+- **UI Framework**: Radix UI components with shadcn/ui styling system
+- **Styling**: Tailwind CSS with CSS custom properties for theming
+- **State Management**: TanStack Query (React Query) for server state management
+- **Form Handling**: React Hook Form with Zod validation
+
+### Backend Architecture
+- **Runtime**: Node.js with Express.js REST API
+- **Language**: TypeScript with ES modules
+- **Database**: PostgreSQL with Drizzle ORM
+- **Database Provider**: Neon Database (serverless PostgreSQL)
+- **File Processing**: Multer for Excel file uploads
+- **Session Management**: Express sessions with PostgreSQL store
+
+### Development Setup
+- **Environment**: Designed for Replit with development-specific plugins
+- **Hot Reload**: Vite HMR with custom error overlay
+- **Build Process**: Separate client and server builds with esbuild for server bundling
+
+## Key Components
+
+### Database Schema
+- **Hotels Table**: Stores hotel information with unique codes, contact details, and active status
+- **Sales Table**: Records sales transactions with quantity, rates, and totals
+- **Payments Table**: Tracks payment records linked to specific sales
+- **Relationships**: Foreign key constraints maintaining data integrity
+
+### API Structure
+- **Hotels API**: CRUD operations for hotel management
+- **Sales API**: Sales record management with hotel relationships
+- **Payments API**: Payment tracking and processing
+- **Dashboard API**: Aggregated statistics and recent activity
+- **Import API**: Excel file processing for bulk data entry
+- **Export API**: Statement generation for hotels
+
+### Frontend Pages
+- **Dashboard**: Overview with stats cards and recent sales
+- **Sales Management**: Complete sales lifecycle management
+- **Payment Tracking**: Payment status monitoring and recording
+- **Hotel Management**: Customer relationship management
+- **Statement Generation**: Export functionality for accounting
+- **Data Import**: Excel file processing with validation
+
+## Data Flow
+
+### Sales Process
+1. User creates new sale record through modal form
+2. Data validation using Zod schemas
+3. API creates sale record with hotel association
+4. Real-time UI updates via React Query cache invalidation
+5. Dashboard statistics automatically refresh
+
+### Payment Processing
+1. Payments linked to specific sales records
+2. Payment status calculated based on amounts vs. sales totals
+4. Status badges update in real-time across all views
+
+### Data Import Flow
+1. Excel file upload via drag-and-drop interface
+2. Server-side validation and processing
+3. Hotel matching by name or code
+4. Batch creation of sales and payment records
+5. Comprehensive error reporting for failed imports
+
+## External Dependencies
+
+### Core Libraries
+- **@neondatabase/serverless**: PostgreSQL connection for Neon Database
+- **drizzle-orm**: Type-safe ORM with PostgreSQL dialect
+- **@tanstack/react-query**: Server state management and caching
+- **react-hook-form**: Form handling with performance optimization
+- **zod**: Runtime schema validation
+- **date-fns**: Date manipulation and formatting
+- **multer**: File upload middleware
+
+### UI Components
+- **@radix-ui/***: Accessible UI primitives
+- **lucide-react**: Consistent icon system
+- **tailwindcss**: Utility-first CSS framework
+- **class-variance-authority**: Type-safe variant handling
+
+### Development Tools
+- **tsx**: TypeScript execution for development
+- **esbuild**: Fast JavaScript bundler for production
+- **@replit/vite-plugin-***: Replit-specific development enhancements
+
+## Deployment Strategy
+
+### Development Mode
+- Vite dev server with HMR enabled
+- Express server with API route registration
+- Automatic database schema synchronization
+- Real-time error overlays and debugging tools
+
+### Production Build
+1. Vite builds client-side application to `dist/public`
+2. esbuild bundles server application to `dist/index.js`
+3. Static file serving for built client assets
+4. Environment-based configuration for database connections
+
+### Database Management
+- Drizzle Kit for schema migrations in `./migrations`
+- Database URL configuration via environment variables
+- Connection pooling through Neon's serverless driver
+
+The application is designed with a clear separation of concerns, type safety throughout the stack, and a focus on developer experience while maintaining production readiness.
+
+## Changelog
+- June 28, 2025. Initial setup
+
+## User Preferences
+
+Preferred communication style: Simple, everyday language.
