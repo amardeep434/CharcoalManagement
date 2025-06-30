@@ -173,7 +173,7 @@ export function NewSaleModal({ open, onOpenChange }: NewSaleModalProps) {
                 name="quantity"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Quantity (tons)</FormLabel>
+                    <FormLabel>Quantity (kg)</FormLabel>
                     <FormControl>
                       <Input
                         type="number"

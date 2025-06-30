@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, decimal, timestamp, boolean } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, decimal, timestamp, boolean, varchar, jsonb, index } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -86,6 +86,46 @@ export const purchasePayments = pgTable("purchase_payments", {
   paymentMethod: text("payment_method"),
   notes: text("notes"),
   createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
+});
+
+// Session storage table for authentication
+export const sessions = pgTable(
+  "sessions",
+  {
+    sid: varchar("sid").primaryKey(),
+    sess: jsonb("sess").notNull(),
+    expire: timestamp("expire").notNull(),
+  },
+  (table) => [index("IDX_session_expire").on(table.expire)],
+);
+
+// Users table for authentication and role management
+export const users = pgTable("users", {
+  id: varchar("id").primaryKey().notNull(),
+  email: varchar("email").unique(),
+  firstName: varchar("first_name"),
+  lastName: varchar("last_name"),
+  profileImageUrl: varchar("profile_image_url"),
+  role: text("role").notNull().default("viewer"), // admin, manager, operator, viewer
+  companyAccess: jsonb("company_access"), // Array of company IDs user can access
+  permissions: jsonb("permissions"), // Specific permissions object
+  isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { mode: "date" }).notNull().defaultNow(),
+});
+
+// Audit log table for tracking all changes
+export const auditLog = pgTable("audit_log", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").references(() => users.id),
+  action: text("action").notNull(), // CREATE, UPDATE, DELETE
+  tableName: text("table_name").notNull(), // companies, sales, payments, etc.
+  recordId: integer("record_id").notNull(),
+  oldValues: jsonb("old_values"), // Previous values before change
+  newValues: jsonb("new_values"), // New values after change
+  ipAddress: text("ip_address"),
+  userAgent: text("user_agent"),
+  timestamp: timestamp("timestamp", { mode: "date" }).notNull().defaultNow(),
 });
 
 // Insert schemas
@@ -247,3 +287,89 @@ export const purchaseImportSchema = z.object({
 
 export type ExcelImportRow = z.infer<typeof excelImportSchema>;
 export type PurchaseImportRow = z.infer<typeof purchaseImportSchema>;
+
+// User and authentication types
+export const insertUserSchema = createInsertSchema(users).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const upsertUserSchema = createInsertSchema(users).omit({
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertAuditLogSchema = createInsertSchema(auditLog).omit({
+  id: true,
+  timestamp: true,
+});
+
+export type User = typeof users.$inferSelect;
+export type UpsertUser = z.infer<typeof upsertUserSchema>;
+export type InsertUser = z.infer<typeof insertUserSchema>;
+export type AuditLog = typeof auditLog.$inferSelect;
+export type InsertAuditLog = z.infer<typeof insertAuditLogSchema>;
+
+// User roles enum
+export const UserRole = {
+  ADMIN: 'admin',
+  MANAGER: 'manager', 
+  OPERATOR: 'operator',
+  VIEWER: 'viewer'
+} as const;
+
+export type UserRoleType = typeof UserRole[keyof typeof UserRole];
+
+// Permissions structure
+export interface UserPermissions {
+  companies: {
+    create: boolean;
+    read: boolean;
+    update: boolean;
+    delete: boolean;
+  };
+  sales: {
+    create: boolean;
+    read: boolean;
+    update: boolean;
+    delete: boolean;
+  };
+  payments: {
+    create: boolean;
+    read: boolean;
+    update: boolean;
+    delete: boolean;
+  };
+  hotels: {
+    create: boolean;
+    read: boolean;
+    update: boolean;
+    delete: boolean;
+  };
+  suppliers: {
+    create: boolean;
+    read: boolean;
+    update: boolean;
+    delete: boolean;
+  };
+  purchases: {
+    create: boolean;
+    read: boolean;
+    update: boolean;
+    delete: boolean;
+  };
+  statements: {
+    generate: boolean;
+    export: boolean;
+  };
+  audit: {
+    view: boolean;
+  };
+  users: {
+    create: boolean;
+    read: boolean;
+    update: boolean;
+    delete: boolean;
+  };
+}
