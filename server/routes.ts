@@ -443,10 +443,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
             companyId: company.id,
             hotelId: hotel.id,
             date: new Date(validatedRow.date),
-            quantity: validatedRow.quantity,
-            ratePerKg: validatedRow.ratePerKg,
-            totalAmount: validatedRow.totalAmount,
-            notes: validatedRow.notes,
+            quantity: Number(validatedRow.quantity),
+            ratePerKg: Number(validatedRow.ratePerKg),
+            totalAmount: Number(validatedRow.totalAmount),
+            notes: validatedRow.notes || null,
           });
           importResults.newSales++;
 
@@ -511,8 +511,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/export/statement/:hotelId", async (req, res) => {
     try {
       const hotelId = parseInt(req.params.hotelId);
+      const companyId = req.query.companyId ? parseInt(req.query.companyId as string) : undefined;
+      
       const hotel = await storage.getHotel(hotelId);
       const sales = await storage.getSalesByHotel(hotelId);
+      
+      // Filter sales by company if specified
+      const filteredSales = companyId 
+        ? sales.filter(sale => sale.companyId === companyId)
+        : sales;
 
       if (!hotel) {
         return res.status(404).json({ message: "Hotel not found" });
@@ -520,12 +527,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const statement = {
         hotel,
-        sales,
+        sales: filteredSales,
         summary: {
-          totalSales: sales.length,
-          totalAmount: sales.reduce((sum, sale) => sum + Number(sale.totalAmount), 0),
-          totalPaid: sales.reduce((sum, sale) => sum + sale.paidAmount, 0),
-          totalPending: sales.reduce((sum, sale) => sum + sale.pendingAmount, 0),
+          totalSales: filteredSales.length,
+          totalAmount: filteredSales.reduce((sum, sale) => sum + Number(sale.totalAmount), 0),
+          totalPaid: filteredSales.reduce((sum, sale) => sum + sale.paidAmount, 0),
+          totalPending: filteredSales.reduce((sum, sale) => sum + sale.pendingAmount, 0),
         },
         generatedAt: new Date(),
       };

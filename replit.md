@@ -129,6 +129,8 @@ The application is designed with a clear separation of concerns, type safety thr
 - June 28, 2025: Added multi-company architecture with suppliers and purchase tracking
 - June 28, 2025: Integrated PostgreSQL database with Neon Database
 - June 28, 2025: Implemented database seeding and complete API structure
+- June 29, 2025: Migrated from Replit Agent to standard Replit environment
+- June 29, 2025: Added company selection to sales forms and statements for multi-business support
 
 ## User Preferences
 

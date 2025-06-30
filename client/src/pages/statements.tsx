@@ -8,18 +8,43 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { FileText, Download, Eye, Building } from "lucide-react";
 import { format } from "date-fns";
-import type { Hotel, SaleWithHotel } from "@shared/schema";
+import type { Hotel, SaleWithHotel, Company } from "@shared/schema";
+
+interface StatementSummary {
+  totalSales: number;
+  totalAmount: number;
+  totalPaid: number;
+  totalPending: number;
+}
+
+interface Statement {
+  hotel: Hotel;
+  sales: SaleWithHotel[];
+  summary: StatementSummary;
+  generatedAt: string;
+}
 
 export default function Statements() {
   const [selectedHotelId, setSelectedHotelId] = useState<string>("");
+  const [selectedCompanyId, setSelectedCompanyId] = useState<string>("");
+
+  const { data: companies, isLoading: companiesLoading } = useQuery<Company[]>({
+    queryKey: ["/api/companies"],
+  });
 
   const { data: hotels, isLoading: hotelsLoading } = useQuery<Hotel[]>({
     queryKey: ["/api/hotels"],
   });
 
-  const { data: statement, isLoading: statementLoading } = useQuery({
-    queryKey: ["/api/export/statement", selectedHotelId],
-    enabled: !!selectedHotelId,
+  const { data: statement, isLoading: statementLoading } = useQuery<Statement>({
+    queryKey: ["/api/export/statement", selectedHotelId, selectedCompanyId],
+    queryFn: async () => {
+      const url = `/api/export/statement/${selectedHotelId}?companyId=${selectedCompanyId}`;
+      const response = await fetch(url);
+      if (!response.ok) throw new Error('Failed to fetch statement');
+      return response.json();
+    },
+    enabled: !!selectedHotelId && !!selectedCompanyId,
   });
 
   const formatCurrency = (amount: number) => `₹${amount.toLocaleString()}`;
@@ -67,14 +92,41 @@ export default function Statements() {
       />
 
       <div className="p-6">
-        {/* Hotel Selection */}
+        {/* Company and Hotel Selection */}
         <Card className="mb-6">
           <CardContent className="p-4">
-            <div className="flex items-center space-x-4">
-              <div className="flex-1">
-                <Select value={selectedHotelId} onValueChange={setSelectedHotelId}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">
+                  Select Your Charcoal Business
+                </label>
+                <Select value={selectedCompanyId} onValueChange={setSelectedCompanyId}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select a hotel to generate statement..." />
+                    <SelectValue placeholder="Choose your business..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {companiesLoading ? (
+                      <SelectItem value="loading" disabled>Loading...</SelectItem>
+                    ) : companies && companies.length > 0 ? (
+                      companies.map((company) => (
+                        <SelectItem key={company.id} value={company.id.toString()}>
+                          {company.name} ({company.code})
+                        </SelectItem>
+                      ))
+                    ) : (
+                      <SelectItem value="no-companies" disabled>No businesses found</SelectItem>
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">
+                  Select Hotel Customer
+                </label>
+                <Select value={selectedHotelId} onValueChange={setSelectedHotelId} disabled={!selectedCompanyId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Choose hotel for statement..." />
                   </SelectTrigger>
                   <SelectContent>
                     {hotelsLoading ? (
@@ -91,9 +143,12 @@ export default function Statements() {
                   </SelectContent>
                 </Select>
               </div>
-              <Button variant="outline" disabled={!selectedHotelId}>
+            </div>
+            
+            <div className="flex justify-end mt-4">
+              <Button variant="outline" disabled={!selectedHotelId || !selectedCompanyId}>
                 <Eye className="mr-2 h-4 w-4" />
-                Preview
+                Preview Statement
               </Button>
             </div>
           </CardContent>
