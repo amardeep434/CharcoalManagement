@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { insertSaleSchema, type Hotel } from "@shared/schema";
+import { insertSaleSchema, type Hotel, type Company } from "@shared/schema";
 import { z } from "zod";
 
 const newSaleFormSchema = insertSaleSchema.extend({
@@ -32,6 +32,10 @@ export function NewSaleModal({ open, onOpenChange }: NewSaleModalProps) {
     queryKey: ["/api/hotels"],
   });
 
+  const { data: companies, isLoading: companiesLoading } = useQuery<Company[]>({
+    queryKey: ["/api/companies"],
+  });
+
   const form = useForm<NewSaleForm>({
     resolver: zodResolver(newSaleFormSchema),
     defaultValues: {
@@ -39,7 +43,7 @@ export function NewSaleModal({ open, onOpenChange }: NewSaleModalProps) {
       quantity: 0,
       ratePerKg: "4",
       totalAmount: 0,
-      notes: "",
+      notes: ""
     },
   });
 
@@ -89,10 +93,41 @@ export function NewSaleModal({ open, onOpenChange }: NewSaleModalProps) {
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
+              name="companyId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Charcoal Business</FormLabel>
+                  <Select onValueChange={(value) => field.onChange(parseInt(value))} value={field.value?.toString()}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select your business..." />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {companiesLoading ? (
+                        <SelectItem value="loading" disabled>Loading...</SelectItem>
+                      ) : companies && companies.length > 0 ? (
+                        companies.map((company) => (
+                          <SelectItem key={company.id} value={company.id.toString()}>
+                            {company.name} ({company.code})
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <SelectItem value="no-companies" disabled>No businesses found</SelectItem>
+                      )}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
               name="hotelId"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Hotel</FormLabel>
+                  <FormLabel>Hotel Customer</FormLabel>
                   <Select onValueChange={(value) => field.onChange(parseInt(value))} value={field.value?.toString()}>
                     <FormControl>
                       <SelectTrigger>
@@ -105,7 +140,7 @@ export function NewSaleModal({ open, onOpenChange }: NewSaleModalProps) {
                       ) : hotels && hotels.length > 0 ? (
                         hotels.map((hotel) => (
                           <SelectItem key={hotel.id} value={hotel.id.toString()}>
-                            {hotel.name}
+                            {hotel.name} ({hotel.code})
                           </SelectItem>
                         ))
                       ) : (
@@ -208,7 +243,10 @@ export function NewSaleModal({ open, onOpenChange }: NewSaleModalProps) {
                       rows={3}
                       placeholder="Additional notes..."
                       className="resize-none"
-                      {...field}
+                      onChange={field.onChange}
+                      onBlur={field.onBlur}
+                      name={field.name}
+                      value={field.value || ""}
                     />
                   </FormControl>
                   <FormMessage />
