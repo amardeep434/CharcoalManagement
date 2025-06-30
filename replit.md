@@ -131,7 +131,46 @@ The application is designed with a clear separation of concerns, type safety thr
 - June 28, 2025: Implemented database seeding and complete API structure
 - June 29, 2025: Migrated from Replit Agent to standard Replit environment
 - June 29, 2025: Added company selection to sales forms and statements for multi-business support
+- June 30, 2025: Implemented session-based authentication with user management
+- June 30, 2025: Added role-based access control with admin, manager, operator, and viewer roles
+- June 30, 2025: Integrated audit logging to track all system changes
+- June 30, 2025: Updated measurement units from tons to kilograms throughout application
+
+## Authentication System
+
+The application now includes a comprehensive authentication system:
+
+### User Management
+- Session-based authentication using express-session
+- Password hashing with bcrypt
+- Default admin account: username 'admin', password 'admin123'
+- User roles: admin, manager, operator, viewer with hierarchical permissions
+
+### User Interface
+- Login form with authentication flow
+- Protected routes requiring authentication
+- User information display in sidebar
+- Logout functionality
+
+### Audit Logging
+- Comprehensive audit trail tracking all user actions
+- Records user ID, action type, table name, old/new values
+- IP address and user agent tracking for security
+
+### Database Schema
+- Users table with authentication fields and permissions
+- Audit log table for tracking changes
+- Session storage in PostgreSQL
+
+## Measurement Units
+
+All measurement units have been updated to use kilograms:
+- Sales quantities displayed as "kg" instead of tons
+- Rate calculations shown as "₹/kg"
+- Dashboard statistics display charcoal amounts in kg
+- Form labels updated throughout the application
 
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
+Preferred measurement units: Kilograms (kg) for all charcoal quantities.

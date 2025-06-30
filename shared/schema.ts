@@ -101,15 +101,17 @@ export const sessions = pgTable(
 
 // Users table for authentication and role management
 export const users = pgTable("users", {
-  id: varchar("id").primaryKey().notNull(),
+  id: serial("id").primaryKey(),
+  username: varchar("username", { length: 50 }).notNull().unique(),
   email: varchar("email").unique(),
+  passwordHash: text("password_hash").notNull(),
   firstName: varchar("first_name"),
   lastName: varchar("last_name"),
-  profileImageUrl: varchar("profile_image_url"),
   role: text("role").notNull().default("viewer"), // admin, manager, operator, viewer
   companyAccess: jsonb("company_access"), // Array of company IDs user can access
   permissions: jsonb("permissions"), // Specific permissions object
   isActive: boolean("is_active").notNull().default(true),
+  lastLoginAt: timestamp("last_login_at", { mode: "date" }),
   createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { mode: "date" }).notNull().defaultNow(),
 });

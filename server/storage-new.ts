@@ -1,11 +1,24 @@
 import { 
-  companies, suppliers, hotels, sales, payments, purchases, purchasePayments,
-  type Company, type Supplier, type Hotel, type Sale, type Payment, type Purchase, type PurchasePayment,
-  type InsertCompany, type InsertSupplier, type InsertHotel, type InsertSale, type InsertPayment, type InsertPurchase, type InsertPurchasePayment,
+  companies, suppliers, hotels, sales, payments, purchases, purchasePayments, users, auditLog,
+  type Company, type Supplier, type Hotel, type Sale, type Payment, type Purchase, type PurchasePayment, type User, type AuditLog,
+  type InsertCompany, type InsertSupplier, type InsertHotel, type InsertSale, type InsertPayment, type InsertPurchase, type InsertPurchasePayment, type InsertUser, type InsertAuditLog,
   type SaleWithHotel, type PurchaseWithSupplier, type HotelWithStats, type SupplierWithStats, type CompanyWithStats, type DashboardStats 
 } from "@shared/schema";
 
 export interface IStorage {
+  // Users
+  getUsers(): Promise<User[]>;
+  getUser(id: number): Promise<User | undefined>;
+  getUserByUsername(username: string): Promise<User | undefined>;
+  createUser(user: InsertUser): Promise<User>;
+  updateUser(id: number, user: Partial<InsertUser>): Promise<User | undefined>;
+  updateUserLastLogin(id: number): Promise<void>;
+  deleteUser(id: number): Promise<boolean>;
+
+  // Audit Log
+  createAuditLog(log: InsertAuditLog): Promise<AuditLog>;
+  getAuditLogs(filters?: { userId?: number; tableName?: string; limit?: number }): Promise<AuditLog[]>;
+
   // Companies
   getCompanies(): Promise<Company[]>;
   getCompany(id: number): Promise<Company | undefined>;
@@ -86,6 +99,8 @@ export class MemStorage implements IStorage {
   private payments: Map<number, Payment>;
   private purchases: Map<number, Purchase>;
   private purchasePayments: Map<number, PurchasePayment>;
+  private users: Map<number, User>;
+  private auditLogs: Map<number, AuditLog>;
   
   private currentCompanyId: number;
   private currentSupplierId: number;
@@ -94,6 +109,8 @@ export class MemStorage implements IStorage {
   private currentPaymentId: number;
   private currentPurchaseId: number;
   private currentPurchasePaymentId: number;
+  private currentUserId: number;
+  private currentAuditLogId: number;
 
   constructor() {
     this.companies = new Map();
@@ -103,6 +120,8 @@ export class MemStorage implements IStorage {
     this.payments = new Map();
     this.purchases = new Map();
     this.purchasePayments = new Map();
+    this.users = new Map();
+    this.auditLogs = new Map();
     
     this.currentCompanyId = 1;
     this.currentSupplierId = 1;
@@ -111,9 +130,138 @@ export class MemStorage implements IStorage {
     this.currentPaymentId = 1;
     this.currentPurchaseId = 1;
     this.currentPurchasePaymentId = 1;
+    this.currentUserId = 1;
+    this.currentAuditLogId = 1;
 
     // Create a default company for backward compatibility
     this.createDefaultCompany();
+    this.createDefaultAdmin();
+  }
+
+  // User management methods
+  async getUsers(): Promise<User[]> {
+    return Array.from(this.users.values()).filter(user => user.isActive);
+  }
+
+  async getUser(id: number): Promise<User | undefined> {
+    return this.users.get(id);
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    return Array.from(this.users.values()).find(user => user.username === username);
+  }
+
+  async createUser(insertUser: InsertUser): Promise<User> {
+    const user: User = { 
+      id: this.currentUserId++,
+      username: insertUser.username,
+      email: insertUser.email || null,
+      passwordHash: insertUser.passwordHash,
+      firstName: insertUser.firstName || null,
+      lastName: insertUser.lastName || null,
+      role: insertUser.role ?? 'viewer',
+      companyAccess: insertUser.companyAccess || null,
+      permissions: insertUser.permissions || null,
+      isActive: insertUser.isActive !== undefined ? insertUser.isActive : true,
+      lastLoginAt: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.users.set(user.id, user);
+    return user;
+  }
+
+  async updateUser(id: number, userUpdate: Partial<InsertUser>): Promise<User | undefined> {
+    const user = this.users.get(id);
+    if (!user) return undefined;
+    
+    const updatedUser = { 
+      ...user, 
+      ...userUpdate,
+      updatedAt: new Date(),
+    };
+    this.users.set(id, updatedUser);
+    return updatedUser;
+  }
+
+  async updateUserLastLogin(id: number): Promise<void> {
+    const user = this.users.get(id);
+    if (user) {
+      user.lastLoginAt = new Date();
+      this.users.set(id, user);
+    }
+  }
+
+  async deleteUser(id: number): Promise<boolean> {
+    return this.users.delete(id);
+  }
+
+  // Audit log methods
+  async createAuditLog(insertLog: InsertAuditLog): Promise<AuditLog> {
+    const log: AuditLog = {
+      id: this.currentAuditLogId++,
+      ...insertLog,
+      userId: insertLog.userId || null,
+      oldValues: insertLog.oldValues || null,
+      newValues: insertLog.newValues || null,
+      ipAddress: insertLog.ipAddress || null,
+      userAgent: insertLog.userAgent || null,
+      timestamp: new Date(),
+    };
+    this.auditLogs.set(log.id, log);
+    return log;
+  }
+
+  async getAuditLogs(filters?: { userId?: number; tableName?: string; limit?: number }): Promise<AuditLog[]> {
+    let logs = Array.from(this.auditLogs.values());
+    
+    if (filters?.userId !== undefined) {
+      logs = logs.filter(log => log.userId === filters.userId!.toString());
+    }
+    
+    if (filters?.tableName) {
+      logs = logs.filter(log => log.tableName === filters.tableName);
+    }
+    
+    logs.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+    
+    if (filters?.limit) {
+      logs = logs.slice(0, filters.limit);
+    }
+    
+    return logs;
+  }
+
+  private async createDefaultAdmin() {
+    const bcrypt = await import('bcrypt');
+    const hashedPassword = await bcrypt.hash('admin123', 10);
+    
+    const defaultAdmin: User = {
+      id: this.currentUserId++,
+      username: 'admin',
+      email: 'admin@charcoalbiz.com',
+      passwordHash: hashedPassword,
+      firstName: 'System',
+      lastName: 'Administrator',
+      role: 'admin',
+      companyAccess: null,
+      permissions: {
+        companies: { create: true, read: true, update: true, delete: true },
+        sales: { create: true, read: true, update: true, delete: true },
+        payments: { create: true, read: true, update: true, delete: true },
+        hotels: { create: true, read: true, update: true, delete: true },
+        suppliers: { create: true, read: true, update: true, delete: true },
+        purchases: { create: true, read: true, update: true, delete: true },
+        statements: { generate: true, export: true },
+        audit: { view: true },
+        users: { create: true, read: true, update: true, delete: true },
+      },
+      isActive: true,
+      lastLoginAt: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.users.set(defaultAdmin.id, defaultAdmin);
   }
 
   private createDefaultCompany() {

@@ -3,10 +3,13 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { 
   insertCompanySchema, insertSupplierSchema, insertHotelSchema, insertSaleSchema, insertPaymentSchema, 
-  insertPurchaseSchema, insertPurchasePaymentSchema, excelImportSchema, purchaseImportSchema,
+  insertPurchaseSchema, insertPurchasePaymentSchema, excelImportSchema, purchaseImportSchema, insertUserSchema,
   type ExcelImportRow, type PurchaseImportRow 
 } from "@shared/schema";
+import { isAuthenticated, requireRole, requirePermission, auditLog } from "./replitAuth";
 import multer from "multer";
+import bcrypt from "bcrypt";
+import session from "express-session";
 import { z } from "zod";
 
 // Extend Request type to include file property
@@ -17,6 +20,186 @@ interface MulterRequest extends Request {
 const upload = multer({ storage: multer.memoryStorage() });
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Simple session-based authentication setup
+  app.use(session({
+    secret: process.env.SESSION_SECRET || 'charcoal-biz-secret-key',
+    resave: false,
+    saveUninitialized: false,
+    cookie: { 
+      secure: false, // Set to true in production with HTTPS
+      maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    }
+  }));
+
+  // Simple authentication middleware
+  const requireAuth = (req: any, res: any, next: any) => {
+    if (!req.session.userId) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
+    next();
+  };
+
+  // Authentication routes
+  app.post('/api/auth/login', async (req, res) => {
+    try {
+      const { username, password } = req.body;
+      
+      if (!username || !password) {
+        return res.status(400).json({ message: "Username and password required" });
+      }
+
+      const user = await storage.getUserByUsername(username);
+      if (!user || !user.isActive) {
+        return res.status(401).json({ message: "Invalid credentials" });
+      }
+
+      const isValid = await bcrypt.compare(password, user.passwordHash);
+      if (!isValid) {
+        return res.status(401).json({ message: "Invalid credentials" });
+      }
+
+      // Update last login
+      await storage.updateUserLastLogin(user.id);
+
+      // Store user in session
+      (req.session as any).userId = user.id;
+      
+      // Log the login
+      await storage.createAuditLog({
+        userId: user.id.toString(),
+        action: 'LOGIN',
+        tableName: 'users',
+        recordId: user.id,
+        newValues: null,
+        oldValues: null,
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent'),
+      });
+
+      res.json({ 
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        role: user.role
+      });
+    } catch (error) {
+      console.error("Login error:", error);
+      res.status(500).json({ message: "Login failed" });
+    }
+  });
+
+  app.post('/api/auth/logout', (req, res) => {
+    (req.session as any).destroy((err: any) => {
+      if (err) {
+        return res.status(500).json({ message: "Logout failed" });
+      }
+      res.json({ message: "Logged out successfully" });
+    });
+  });
+
+  app.get('/api/auth/user', async (req, res) => {
+    const userId = (req.session as any).userId;
+    if (!userId) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+
+    try {
+      const user = await storage.getUser(userId);
+      if (!user || !user.isActive) {
+        return res.status(401).json({ message: "User not found" });
+      }
+
+      res.json({ 
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        role: user.role,
+        permissions: user.permissions
+      });
+    } catch (error) {
+      console.error("User fetch error:", error);
+      res.status(500).json({ message: "Failed to fetch user" });
+    }
+  });
+
+  // User management routes (admin only)
+  app.get('/api/users', requireAuth, async (req, res) => {
+    try {
+      const users = await storage.getUsers();
+      res.json(users.map(user => ({
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        role: user.role,
+        isActive: user.isActive,
+        lastLoginAt: user.lastLoginAt,
+        createdAt: user.createdAt
+      })));
+    } catch (error) {
+      console.error("Users fetch error:", error);
+      res.status(500).json({ message: "Failed to fetch users" });
+    }
+  });
+
+  app.post('/api/users', requireAuth, async (req, res) => {
+    try {
+      const validatedData = insertUserSchema.parse(req.body);
+      const hashedPassword = await bcrypt.hash(validatedData.passwordHash, 10);
+      
+      const user = await storage.createUser({
+        ...validatedData,
+        passwordHash: hashedPassword
+      });
+
+      // Log the creation
+      await storage.createAuditLog({
+        userId: ((req.session as any).userId).toString(),
+        action: 'CREATE',
+        tableName: 'users',
+        recordId: user.id,
+        newValues: { username: user.username, role: user.role },
+        oldValues: null,
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent'),
+      });
+
+      res.status(201).json({
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        role: user.role,
+        isActive: user.isActive
+      });
+    } catch (error) {
+      console.error("User creation error:", error);
+      res.status(500).json({ message: "Failed to create user" });
+    }
+  });
+
+  // Audit log routes
+  app.get('/api/audit-logs', requireAuth, async (req, res) => {
+    try {
+      const { userId, tableName, limit } = req.query;
+      const logs = await storage.getAuditLogs({
+        userId: userId ? parseInt(userId as string) : undefined,
+        tableName: tableName as string,
+        limit: limit ? parseInt(limit as string) : 50
+      });
+      res.json(logs);
+    } catch (error) {
+      console.error("Audit logs fetch error:", error);
+      res.status(500).json({ message: "Failed to fetch audit logs" });
+    }
+  });
+
   // Company routes
   app.get("/api/companies", async (req, res) => {
     try {

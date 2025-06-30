@@ -1,5 +1,10 @@
 import { Link, useLocation } from "wouter";
-import { Flame, ChartLine, ShoppingCart, CreditCard, Building, FileText, Upload, User } from "lucide-react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Flame, ChartLine, ShoppingCart, CreditCard, Building, FileText, Upload, LogOut } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 
 const navItems = [
   { path: "/", label: "Dashboard", icon: ChartLine },
@@ -12,6 +17,30 @@ const navItems = [
 
 export function Sidebar() {
   const [location] = useLocation();
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  const logoutMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest("POST", "/api/auth/logout");
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.clear();
+      toast({
+        title: "Logged out",
+        description: "You have been logged out successfully",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Logout failed",
+        description: "There was an error logging out",
+        variant: "destructive",
+      });
+    },
+  });
 
   return (
     <aside className="w-64 bg-white shadow-sm border-r border-gray-200 flex flex-col">
@@ -25,6 +54,12 @@ export function Sidebar() {
             <p className="text-sm text-gray-500">Sales Management</p>
           </div>
         </div>
+        {user && (
+          <div className="mt-4 text-sm text-gray-600">
+            Welcome, {(user as any).firstName || (user as any).username}
+            <div className="text-xs text-gray-500">{(user as any).role}</div>
+          </div>
+        )}
       </div>
       
       <nav className="flex-1 p-4">
@@ -51,15 +86,15 @@ export function Sidebar() {
       </nav>
       
       <div className="p-4 border-t border-gray-200">
-        <div className="flex items-center space-x-3">
-          <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
-            <User className="text-gray-600 text-sm" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-gray-900">Admin User</p>
-            <p className="text-xs text-gray-500">admin@charcoalbiz.com</p>
-          </div>
-        </div>
+        <Button
+          onClick={() => logoutMutation.mutate()}
+          variant="outline"
+          className="w-full flex items-center justify-center space-x-2"
+          disabled={logoutMutation.isPending}
+        >
+          <LogOut className="w-4 h-4" />
+          <span>{logoutMutation.isPending ? "Logging out..." : "Logout"}</span>
+        </Button>
       </div>
     </aside>
   );

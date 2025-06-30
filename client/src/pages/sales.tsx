@@ -96,8 +96,8 @@ export default function Sales() {
                 <TableRow>
                   <TableHead>Hotel</TableHead>
                   <TableHead>Date</TableHead>
-                  <TableHead>Quantity</TableHead>
-                  <TableHead>Rate</TableHead>
+                  <TableHead>Quantity (kg)</TableHead>
+                  <TableHead>Rate (₹/kg)</TableHead>
                   <TableHead>Total Amount</TableHead>
                   <TableHead>Paid Amount</TableHead>
                   <TableHead>Pending</TableHead>

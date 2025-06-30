@@ -118,7 +118,7 @@ export default function Dashboard() {
                 <div>
                   <p className="text-sm text-gray-600 mb-1">This Month</p>
                   <p className="text-2xl font-bold text-gray-900">
-                    {statsLoading ? "..." : `${stats?.monthlyCharcoal || 0} tons`}
+                    {statsLoading ? "..." : `${stats?.monthlyCharcoal || 0} kg`}
                   </p>
                   <p className="text-sm text-gray-500 mt-1">
                     <Flame className="inline mr-1 h-3 w-3" />
