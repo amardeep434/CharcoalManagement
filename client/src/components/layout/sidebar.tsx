@@ -144,17 +144,28 @@ export function Sidebar() {
 
   return (
     <>
-      {/* Mobile Menu Button - only show when menu is closed */}
-      {!isMobileMenuOpen && (
-        <Button
-          id="mobile-menu-button"
-          size="sm"
-          className="lg:hidden fixed top-4 left-4 z-50 bg-blue-600 hover:bg-blue-700 text-white shadow-lg"
-          onClick={() => setIsMobileMenuOpen(true)}
-        >
-          <Menu className="w-5 h-5" />
-        </Button>
-      )}
+      {/* Mobile Header with Menu Button */}
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
+        <div className="flex items-center space-x-3">
+          <Button
+            id="mobile-menu-button"
+            variant="ghost"
+            size="sm"
+            onClick={() => setIsMobileMenuOpen(true)}
+          >
+            <Menu className="w-5 h-5" />
+          </Button>
+          <div className="flex items-center space-x-2">
+            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold text-sm">CB</span>
+            </div>
+            <span className="font-semibold text-gray-900">CharcoalBiz</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile content padding */}
+      <div className="lg:hidden h-16"></div>
 
       {/* Desktop Sidebar */}
       <aside className="hidden lg:flex w-64 bg-white shadow-sm border-r border-gray-200 flex-col">
