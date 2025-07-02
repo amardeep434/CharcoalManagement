@@ -31,7 +31,13 @@ import { apiRequest } from "@/lib/queryClient";
 import { insertUserSchema, type User } from "@shared/schema";
 import { z } from "zod";
 
-const editUserSchema = insertUserSchema.omit({ password: true }).extend({
+const editUserSchema = z.object({
+  username: z.string().min(1),
+  email: z.string().email().optional(),
+  firstName: z.string().optional(),
+  lastName: z.string().optional(),
+  role: z.string(),
+  isActive: z.boolean(),
   password: z.string().optional(),
 });
 
