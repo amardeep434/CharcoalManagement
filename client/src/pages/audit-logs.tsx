@@ -170,7 +170,7 @@ export default function AuditLogsPage() {
                     
                     <div className="text-sm text-gray-600 space-y-1">
                       <p>
-                        <span className="font-medium">User:</span> User ID {log.userId}
+                        <span className="font-medium">User:</span> {log.username ? `${log.firstName || ''} ${log.lastName || ''} (${log.username})`.trim() : `User ID ${log.userId}`}
                       </p>
                       <p>
                         <span className="font-medium">Time:</span> {new Date(log.timestamp).toLocaleString()}
