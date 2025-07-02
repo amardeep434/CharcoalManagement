@@ -83,6 +83,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Store user in session
       (req.session as any).userId = user.id;
+      console.log('Login - Session ID after setting userId:', req.sessionID);
+      console.log('Login - Session after setting userId:', req.session);
+      console.log('Login - userId set to:', user.id);
       
       // Log the login
       await storage.createAuditLog({
