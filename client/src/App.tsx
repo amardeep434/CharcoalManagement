@@ -12,6 +12,8 @@ import Payments from "@/pages/payments";
 import Hotels from "@/pages/hotels";
 import Statements from "@/pages/statements";
 import Import from "@/pages/import";
+import Users from "@/pages/users";
+import AuditLogs from "@/pages/audit-logs";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -43,6 +45,8 @@ function Router() {
           <Route path="/hotels" component={Hotels} />
           <Route path="/statements" component={Statements} />
           <Route path="/import" component={Import} />
+          <Route path="/users" component={Users} />
+          <Route path="/audit-logs" component={AuditLogs} />
           <Route component={NotFound} />
         </Switch>
       </main>

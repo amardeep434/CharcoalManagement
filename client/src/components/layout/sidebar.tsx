@@ -1,6 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Flame, ChartLine, ShoppingCart, CreditCard, Building, FileText, Upload, LogOut } from "lucide-react";
+import { Flame, ChartLine, ShoppingCart, CreditCard, Building, FileText, Upload, LogOut, Users as UsersIcon, Activity } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -14,6 +14,8 @@ const navItems = [
   { path: "/hotels", label: "Hotel Management", icon: Building },
   { path: "/statements", label: "Statements", icon: FileText },
   { path: "/import", label: "Import Data", icon: Upload },
+  { path: "/users", label: "User Management", icon: UsersIcon, adminOnly: true },
+  { path: "/audit-logs", label: "Audit Logs", icon: Activity, adminOnly: true },
 ];
 
 export function Sidebar() {
@@ -69,7 +71,7 @@ export function Sidebar() {
       
       <nav className="flex-1 p-4">
         <ul className="space-y-2">
-          {navItems.map((item) => {
+          {navItems.filter(item => !item.adminOnly || (user as User)?.role === 'admin').map((item) => {
             const Icon = item.icon;
             const isActive = location === item.path;
             

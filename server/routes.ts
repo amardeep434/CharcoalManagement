@@ -185,6 +185,87 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.patch('/api/users/:id', requireAuth, async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const updateData: any = { ...req.body };
+      
+      // Hash password if provided
+      if (updateData.password) {
+        updateData.passwordHash = await bcrypt.hash(updateData.password, 10);
+        delete updateData.password;
+      }
+      
+      const user = await storage.updateUser(userId, updateData);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Log the update
+      await storage.createAuditLog({
+        userId: ((req.session as any).userId).toString(),
+        action: 'UPDATE',
+        tableName: 'users',
+        recordId: user.id,
+        newValues: { username: user.username, role: user.role, isActive: user.isActive },
+        oldValues: null,
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent'),
+      });
+
+      res.json({
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        role: user.role,
+        isActive: user.isActive
+      });
+    } catch (error) {
+      console.error("User update error:", error);
+      res.status(500).json({ message: "Failed to update user" });
+    }
+  });
+
+  app.delete('/api/users/:id', requireAuth, async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Prevent deleting the admin user
+      if (user.username === 'admin') {
+        return res.status(400).json({ message: "Cannot delete admin user" });
+      }
+
+      const deleted = await storage.deleteUser(userId);
+      if (!deleted) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Log the deletion
+      await storage.createAuditLog({
+        userId: ((req.session as any).userId).toString(),
+        action: 'DELETE',
+        tableName: 'users',
+        recordId: userId,
+        newValues: null,
+        oldValues: { username: user.username, role: user.role },
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent'),
+      });
+
+      res.json({ message: "User deleted successfully" });
+    } catch (error) {
+      console.error("User deletion error:", error);
+      res.status(500).json({ message: "Failed to delete user" });
+    }
+  });
+
   // Audit log routes
   app.get('/api/audit-logs', requireAuth, async (req, res) => {
     try {
