@@ -144,16 +144,17 @@ export function Sidebar() {
 
   return (
     <>
-      {/* Mobile Menu Button */}
-      <Button
-        id="mobile-menu-button"
-        variant="outline"
-        size="sm"
-        className="lg:hidden fixed top-4 left-4 z-50 bg-white shadow-md"
-        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-      >
-        <Menu className="w-5 h-5" />
-      </Button>
+      {/* Mobile Menu Button - only show when menu is closed */}
+      {!isMobileMenuOpen && (
+        <Button
+          id="mobile-menu-button"
+          size="sm"
+          className="lg:hidden fixed top-4 left-4 z-50 bg-blue-600 hover:bg-blue-700 text-white shadow-lg"
+          onClick={() => setIsMobileMenuOpen(true)}
+        >
+          <Menu className="w-5 h-5" />
+        </Button>
+      )}
 
       {/* Desktop Sidebar */}
       <aside className="hidden lg:flex w-64 bg-white shadow-sm border-r border-gray-200 flex-col">
