@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, setAuthToken } from "@/lib/queryClient";
 
 const loginSchema = z.object({
   username: z.string().min(1, "Username is required"),
@@ -37,6 +37,11 @@ export function LoginForm() {
       return response.json();
     },
     onSuccess: (user: any) => {
+      // Store auth token if provided
+      if (user.authToken) {
+        setAuthToken(user.authToken);
+      }
+      
       queryClient.setQueryData(["/api/auth/user"], user);
       toast({
         title: "Login successful",

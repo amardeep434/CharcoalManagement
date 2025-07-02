@@ -81,11 +81,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Update last login
       await storage.updateUserLastLogin(user.id);
 
-      // Store user in session
+      // Store user in session AND generate auth token
       (req.session as any).userId = user.id;
       console.log('Login - Session ID after setting userId:', req.sessionID);
       console.log('Login - Session after setting userId:', req.session);
       console.log('Login - userId set to:', user.id);
+      
+      // Generate simple auth token as fallback
+      const authToken = Buffer.from(`${user.id}:${req.sessionID}:${Date.now()}`).toString('base64');
+      (req.session as any).authToken = authToken;
       
       // Explicitly save session to ensure it's written to the database
       await new Promise<void>((resolve, reject) => {
@@ -118,7 +122,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         email: user.email,
         firstName: user.firstName,
         lastName: user.lastName,
-        role: user.role
+        role: user.role,
+        authToken: authToken
       });
     } catch (error) {
       console.error("Login error:", error);

@@ -97,10 +97,44 @@ export async function setupAuth(app: Express) {
 }
 
 export const isAuthenticated: RequestHandler = async (req, res, next) => {
-  const userId = (req.session as any).userId;
+  console.log('RequireAuth - Session ID:', req.sessionID);
+  console.log('RequireAuth - Session:', req.session);
+  console.log('RequireAuth - Cookie header:', req.headers.cookie);
+
+  let userId = (req.session as any)?.userId;
+  
+  // If no session userId, check for authorization header as fallback
   if (!userId) {
+    const authHeader = req.headers.authorization;
+    console.log('RequireAuth - Auth header:', authHeader);
+    
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.substring(7);
+      try {
+        const decoded = Buffer.from(token, 'base64').toString('utf-8');
+        const [tokenUserId, sessionId, timestamp] = decoded.split(':');
+        console.log('RequireAuth - Token decoded:', { tokenUserId, sessionId, timestamp });
+        
+        // Simple validation - token should be recent (within 24 hours)
+        const tokenTime = parseInt(timestamp);
+        const now = Date.now();
+        if (now - tokenTime < 24 * 60 * 60 * 1000) {
+          userId = parseInt(tokenUserId);
+          console.log('RequireAuth - Using token auth, userId:', userId);
+        }
+      } catch (error) {
+        console.log('RequireAuth - Token decode error:', error);
+      }
+    }
+  }
+
+  if (!userId) {
+    console.log('RequireAuth - No userId found in session or token');
     return res.status(401).json({ message: "Authentication required" });
   }
+
+  console.log('RequireAuth - Success, userId:', userId);
+  (req as any).userId = userId;
   next();
 };
 
