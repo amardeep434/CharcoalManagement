@@ -40,7 +40,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       secure: false, // Set to true in production with HTTPS
       httpOnly: false, // Allow JavaScript access for debugging
       maxAge: 24 * 60 * 60 * 1000, // 24 hours
-      sameSite: 'lax' // Better compatibility than 'none'
+      sameSite: 'lax', // Better compatibility for development
+      domain: undefined // Don't restrict domain for development
     },
     name: 'connect.sid' // Use default session cookie name
   }));

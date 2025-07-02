@@ -642,7 +642,7 @@ export class DatabaseStorage implements IStorage {
       userAgent: auditLog.userAgent
     })
     .from(auditLog)
-    .leftJoin(users, eq(auditLog.userId, users.id.toString()));
+    .leftJoin(users, eq(sql`CAST(${auditLog.userId} AS INTEGER)`, users.id));
     
     if (filters?.userId && filters?.tableName) {
       return await query
