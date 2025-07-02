@@ -148,7 +148,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete('/api/users/:id', requireAuth, async (req, res) => {
+  app.delete('/api/users/:id', isAuthenticated, async (req, res) => {
     try {
       const userId = parseInt(req.params.id);
       const user = await storage.getUser(userId);
@@ -187,7 +187,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Audit log routes
-  app.get('/api/audit-logs', requireAuth, async (req, res) => {
+  app.get('/api/audit-logs', isAuthenticated, async (req, res) => {
     try {
       const { userId, tableName, limit } = req.query;
       const logs = await storage.getAuditLogs({
