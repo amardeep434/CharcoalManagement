@@ -122,7 +122,7 @@ export class DatabaseStorage implements IStorage {
 
   async deleteSupplier(id: number): Promise<boolean> {
     const result = await db.delete(suppliers).where(eq(suppliers.id, id));
-    return result.rowCount > 0;
+    return (result.rowCount ?? 0) > 0;
   }
 
   async getSuppliersWithStats(): Promise<SupplierWithStats[]> {
@@ -430,17 +430,29 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createPurchase(insertPurchase: InsertPurchase): Promise<Purchase> {
+    const purchaseData = {
+      ...insertPurchase,
+      quantity: insertPurchase.quantity.toString(),
+      ratePerKg: insertPurchase.ratePerKg.toString(),
+      totalAmount: insertPurchase.totalAmount.toString(),
+    };
     const [purchase] = await db
       .insert(purchases)
-      .values(insertPurchase)
+      .values(purchaseData)
       .returning();
     return purchase;
   }
 
   async updatePurchase(id: number, purchaseUpdate: Partial<InsertPurchase>): Promise<Purchase | undefined> {
+    const updateData = {
+      ...purchaseUpdate,
+      ...(purchaseUpdate.quantity && { quantity: purchaseUpdate.quantity.toString() }),
+      ...(purchaseUpdate.ratePerKg && { ratePerKg: purchaseUpdate.ratePerKg.toString() }),
+      ...(purchaseUpdate.totalAmount && { totalAmount: purchaseUpdate.totalAmount.toString() }),
+    };
     const [purchase] = await db
       .update(purchases)
-      .set(purchaseUpdate)
+      .set(updateData)
       .where(eq(purchases.id, id))
       .returning();
     return purchase || undefined;
@@ -466,17 +478,25 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createPurchasePayment(insertPayment: InsertPurchasePayment): Promise<PurchasePayment> {
+    const paymentData = {
+      ...insertPayment,
+      amount: insertPayment.amount.toString(),
+    };
     const [payment] = await db
       .insert(purchasePayments)
-      .values(insertPayment)
+      .values(paymentData)
       .returning();
     return payment;
   }
 
   async updatePurchasePayment(id: number, paymentUpdate: Partial<InsertPurchasePayment>): Promise<PurchasePayment | undefined> {
+    const updateData = {
+      ...paymentUpdate,
+      ...(paymentUpdate.amount && { amount: paymentUpdate.amount.toString() }),
+    };
     const [payment] = await db
       .update(purchasePayments)
-      .set(paymentUpdate)
+      .set(updateData)
       .where(eq(purchasePayments.id, id))
       .returning();
     return payment || undefined;
