@@ -194,7 +194,7 @@ export class DatabaseStorage implements IStorage {
 
   async deleteHotel(id: number): Promise<boolean> {
     const result = await db.delete(hotels).where(eq(hotels.id, id));
-    return result.rowCount > 0;
+    return (result.rowCount ?? 0) > 0;
   }
 
   async getHotelsWithStats(): Promise<HotelWithStats[]> {
@@ -364,7 +364,7 @@ export class DatabaseStorage implements IStorage {
 
   async deletePayment(id: number): Promise<boolean> {
     const result = await db.delete(payments).where(eq(payments.id, id));
-    return result.rowCount > 0;
+    return (result.rowCount ?? 0) > 0;
   }
 
   // Purchases
@@ -460,7 +460,7 @@ export class DatabaseStorage implements IStorage {
 
   async deletePurchase(id: number): Promise<boolean> {
     const result = await db.delete(purchases).where(eq(purchases.id, id));
-    return result.rowCount > 0;
+    return (result.rowCount ?? 0) > 0;
   }
 
   // Purchase Payments
@@ -504,7 +504,7 @@ export class DatabaseStorage implements IStorage {
 
   async deletePurchasePayment(id: number): Promise<boolean> {
     const result = await db.delete(purchasePayments).where(eq(purchasePayments.id, id));
-    return result.rowCount > 0;
+    return (result.rowCount ?? 0) > 0;
   }
 
   // Dashboard
@@ -631,7 +631,7 @@ export class DatabaseStorage implements IStorage {
 
   async deleteUser(id: number): Promise<boolean> {
     const result = await db.delete(users).where(eq(users.id, id));
-    return result.rowCount > 0;
+    return (result.rowCount ?? 0) > 0;
   }
 
   // Audit Log
