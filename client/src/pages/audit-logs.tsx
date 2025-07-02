@@ -6,22 +6,22 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Activity, Search, Filter, Calendar } from "lucide-react";
+import { apiRequest } from "@/lib/queryClient";
 import type { AuditLog } from "@shared/schema";
 
 export default function AuditLogsPage() {
-  const [tableFilter, setTableFilter] = useState<string>("");
-  const [actionFilter, setActionFilter] = useState<string>("");
+  const [tableFilter, setTableFilter] = useState<string>("all");
+  const [actionFilter, setActionFilter] = useState<string>("all");
   const [limit, setLimit] = useState<number>(50);
 
   const { data: auditLogs, isLoading } = useQuery<AuditLog[]>({
     queryKey: ["/api/audit-logs", { tableName: tableFilter, limit }],
     queryFn: async () => {
       const params = new URLSearchParams();
-      if (tableFilter) params.append('tableName', tableFilter);
+      if (tableFilter && tableFilter !== "all") params.append('tableName', tableFilter);
       params.append('limit', limit.toString());
       
-      const response = await fetch(`/api/audit-logs?${params}`);
-      if (!response.ok) throw new Error('Failed to fetch audit logs');
+      const response = await apiRequest("GET", `/api/audit-logs?${params}`);
       return response.json();
     }
   });
@@ -42,7 +42,7 @@ export default function AuditLogsPage() {
   };
 
   const filteredLogs = auditLogs?.filter(log => 
-    !actionFilter || log.action === actionFilter
+    actionFilter === "all" || log.action === actionFilter
   ) || [];
 
   if (isLoading) {
@@ -86,7 +86,7 @@ export default function AuditLogsPage() {
                   <SelectValue placeholder="All tables" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All tables</SelectItem>
+                  <SelectItem value="all">All tables</SelectItem>
                   <SelectItem value="users">Users</SelectItem>
                   <SelectItem value="companies">Companies</SelectItem>
                   <SelectItem value="sales">Sales</SelectItem>
@@ -105,7 +105,7 @@ export default function AuditLogsPage() {
                   <SelectValue placeholder="All actions" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All actions</SelectItem>
+                  <SelectItem value="all">All actions</SelectItem>
                   <SelectItem value="CREATE">Create</SelectItem>
                   <SelectItem value="UPDATE">Update</SelectItem>
                   <SelectItem value="DELETE">Delete</SelectItem>
@@ -133,8 +133,8 @@ export default function AuditLogsPage() {
               <Button 
                 variant="outline" 
                 onClick={() => {
-                  setTableFilter("");
-                  setActionFilter("");
+                  setTableFilter("all");
+                  setActionFilter("all");
                   setLimit(50);
                 }}
                 className="w-full"
@@ -182,24 +182,26 @@ export default function AuditLogsPage() {
                       )}
                     </div>
 
-                    <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {log.oldValues && (
-                        <div>
-                          <p className="text-xs font-medium text-gray-500 mb-1">OLD VALUES</p>
-                          <pre className="text-xs bg-red-50 border border-red-200 rounded p-2 overflow-x-auto">
-                            {JSON.stringify(log.oldValues as any, null, 2)}
-                          </pre>
-                        </div>
-                      )}
-                      {log.newValues && (
-                        <div>
-                          <p className="text-xs font-medium text-gray-500 mb-1">NEW VALUES</p>
-                          <pre className="text-xs bg-green-50 border border-green-200 rounded p-2 overflow-x-auto">
-                            {JSON.stringify(log.newValues as any, null, 2)}
-                          </pre>
-                        </div>
-                      )}
-                    </div>
+                    {(log.oldValues || log.newValues) && (
+                      <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {log.oldValues && (
+                          <div>
+                            <p className="text-xs font-medium text-gray-500 mb-1">OLD VALUES</p>
+                            <pre className="text-xs bg-red-50 border border-red-200 rounded p-2 overflow-x-auto">
+                              {JSON.stringify(log.oldValues, null, 2)}
+                            </pre>
+                          </div>
+                        )}
+                        {log.newValues && (
+                          <div>
+                            <p className="text-xs font-medium text-gray-500 mb-1">NEW VALUES</p>
+                            <pre className="text-xs bg-green-50 border border-green-200 rounded p-2 overflow-x-auto">
+                              {JSON.stringify(log.newValues, null, 2)}
+                            </pre>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               </CardContent>

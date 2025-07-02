@@ -135,6 +135,10 @@ The application is designed with a clear separation of concerns, type safety thr
 - June 30, 2025: Added role-based access control with admin, manager, operator, and viewer roles
 - June 30, 2025: Integrated audit logging to track all system changes
 - June 30, 2025: Updated measurement units from tons to kilograms throughout application
+- July 2, 2025: Fixed authentication system conflicts by switching from bcrypt to bcryptjs
+- July 2, 2025: Implemented comprehensive user management system with admin interface
+- July 2, 2025: Added audit logs viewing interface for admin users
+- July 2, 2025: Fixed logout functionality to properly clear sessions and redirect users
 
 ## Authentication System
 
