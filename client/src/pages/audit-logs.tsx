@@ -9,18 +9,12 @@ import { Activity, Search, Filter, Calendar } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import type { AuditLog } from "@shared/schema";
 
-type AuditLogWithUser = AuditLog & {
-  username?: string | null;
-  firstName?: string | null;
-  lastName?: string | null;
-};
-
 export default function AuditLogsPage() {
   const [tableFilter, setTableFilter] = useState<string>("all");
   const [actionFilter, setActionFilter] = useState<string>("all");
   const [limit, setLimit] = useState<number>(50);
 
-  const { data: auditLogs, isLoading } = useQuery<AuditLogWithUser[]>({
+  const { data: auditLogs, isLoading } = useQuery<AuditLog[]>({
     queryKey: ["/api/audit-logs", { tableName: tableFilter, limit }],
     queryFn: async () => {
       const params = new URLSearchParams();
@@ -176,7 +170,7 @@ export default function AuditLogsPage() {
                     
                     <div className="text-sm text-gray-600 space-y-1">
                       <p>
-                        <span className="font-medium">User:</span> {(log as AuditLogWithUser).username ? `${(log as AuditLogWithUser).firstName || ''} ${(log as AuditLogWithUser).lastName || ''} (${(log as AuditLogWithUser).username})`.trim() : `User ID ${log.userId}`}
+                        <span className="font-medium">User:</span> {log.username ? `${log.firstName || ''} ${log.lastName || ''} (${log.username})`.trim() : log.userId}
                       </p>
                       <p>
                         <span className="font-medium">Time:</span> {new Date(log.timestamp).toLocaleString()}
@@ -194,7 +188,7 @@ export default function AuditLogsPage() {
                           <div>
                             <p className="text-xs font-medium text-gray-500 mb-1">OLD VALUES</p>
                             <pre className="text-xs bg-red-50 border border-red-200 rounded p-2 overflow-x-auto">
-                              {JSON.stringify(log.oldValues as any, null, 2)}
+                              {JSON.stringify(log.oldValues, null, 2)}
                             </pre>
                           </div>
                         )}
@@ -202,7 +196,7 @@ export default function AuditLogsPage() {
                           <div>
                             <p className="text-xs font-medium text-gray-500 mb-1">NEW VALUES</p>
                             <pre className="text-xs bg-green-50 border border-green-200 rounded p-2 overflow-x-auto">
-                              {JSON.stringify(log.newValues as any, null, 2)}
+                              {JSON.stringify(log.newValues, null, 2)}
                             </pre>
                           </div>
                         )}

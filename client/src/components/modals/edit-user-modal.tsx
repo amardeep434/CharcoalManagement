@@ -58,9 +58,9 @@ export function EditUserModal({ user, isOpen, onClose }: EditUserModalProps) {
     resolver: zodResolver(editUserSchema),
     defaultValues: {
       username: user.username,
-      email: user.email || undefined,
-      firstName: user.firstName || undefined,
-      lastName: user.lastName || undefined,
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
       role: user.role,
       isActive: user.isActive,
       password: "",

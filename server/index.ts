@@ -59,14 +59,8 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  // Check database connectivity
-  let databaseAvailable = true;
-  try {
-    await seedDatabase();
-  } catch (error) {
-    console.warn('Database initialization failed, continuing with degraded functionality:', error);
-    databaseAvailable = false;
-  }
+  // Initialize database with default data
+  await seedDatabase();
   
   const server = await registerRoutes(app);
 
@@ -74,10 +68,8 @@ app.use((req, res, next) => {
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
 
-    if (!res.headersSent) {
-      res.status(status).json({ message });
-    }
-    console.error('Error:', err);
+    res.status(status).json({ message });
+    throw err;
   });
 
   // importantly only setup vite in development and after
