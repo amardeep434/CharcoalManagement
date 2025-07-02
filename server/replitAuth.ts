@@ -4,7 +4,7 @@ import session from "express-session";
 import type { Express, RequestHandler } from "express";
 import connectPg from "connect-pg-simple";
 import bcrypt from "bcryptjs";
-import { storage } from "./storage";
+import { dbStorage as storage } from "./storage-db";
 
 export function getSession() {
   const sessionTtl = 7 * 24 * 60 * 60 * 1000; // 1 week
@@ -97,8 +97,9 @@ export async function setupAuth(app: Express) {
 }
 
 export const isAuthenticated: RequestHandler = async (req, res, next) => {
-  if (!req.isAuthenticated() || !req.user) {
-    return res.status(401).json({ message: "Unauthorized" });
+  const userId = (req.session as any).userId;
+  if (!userId) {
+    return res.status(401).json({ message: "Authentication required" });
   }
   next();
 };
@@ -106,9 +107,9 @@ export const isAuthenticated: RequestHandler = async (req, res, next) => {
 // Role-based authorization middleware
 export const requireRole = (role: string) => {
   return async (req: any, res: any, next: any) => {
-    const userId = req.user?.id;
+    const userId = (req.session as any).userId;
     if (!userId) {
-      return res.status(401).json({ message: "Unauthorized" });
+      return res.status(401).json({ message: "Authentication required" });
     }
 
     const user = await storage.getUser(userId);
