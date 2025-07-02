@@ -25,6 +25,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { insertUserSchema } from "@shared/schema";
@@ -32,6 +33,15 @@ import { z } from "zod";
 
 const createUserSchema = insertUserSchema.extend({
   password: z.string().min(6, "Password must be at least 6 characters"),
+  username: z.string().min(1, "Username is required"),
+  firstName: z.string().min(1, "First name is required"),
+  lastName: z.string().min(1, "Last name is required"),
+  role: z.string().min(1, "Role is required"),
+  forcePasswordChange: z.boolean().default(false),
+}).omit({
+  email: true,
+}).extend({
+  email: z.string().email("Invalid email format").optional().or(z.literal("")),
 });
 
 type CreateUserForm = z.infer<typeof createUserSchema>;
@@ -56,6 +66,7 @@ export function NewUserModal({ isOpen, onClose }: NewUserModalProps) {
       role: "viewer",
       password: "",
       isActive: true,
+      forcePasswordChange: false,
     },
   });
 
@@ -190,6 +201,26 @@ export function NewUserModal({ isOpen, onClose }: NewUserModalProps) {
                     <Input {...field} type="password" placeholder="Enter password" />
                   </FormControl>
                   <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="forcePasswordChange"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                  <FormControl>
+                    <Checkbox
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                  <div className="space-y-1 leading-none">
+                    <FormLabel>
+                      Force password change on next login
+                    </FormLabel>
+                  </div>
                 </FormItem>
               )}
             />

@@ -37,11 +37,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     resave: false,
     saveUninitialized: false,
     cookie: { 
-      secure: false,
-      httpOnly: false, // Temporarily disable for debugging
+      secure: false, // Set to true in production with HTTPS
+      httpOnly: true, // Re-enable for security
       maxAge: 24 * 60 * 60 * 1000, // 24 hours
-      sameSite: false // Disable sameSite for development
-    }
+      sameSite: 'lax' // Better compatibility than 'none'
+    },
+    name: 'sessionId' // Explicit session cookie name
   }));
 
   // Use the imported authentication middleware with Authorization header support

@@ -114,11 +114,7 @@ export function LoginForm() {
             </form>
           </Form>
           
-          <div className="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
-            <p>Default admin credentials:</p>
-            <p>Username: <strong>admin</strong></p>
-            <p>Password: <strong>admin123</strong></p>
-          </div>
+
         </CardContent>
       </Card>
     </div>

@@ -623,11 +623,29 @@ export class DatabaseStorage implements IStorage {
     return log;
   }
 
-  async getAuditLogs(filters?: { userId?: number; tableName?: string; limit?: number }): Promise<AuditLog[]> {
+  async getAuditLogs(filters?: { userId?: number; tableName?: string; limit?: number }): Promise<any[]> {
     const limit = filters?.limit || 50;
     
+    const query = db.select({
+      id: auditLog.id,
+      userId: auditLog.userId,
+      username: users.username,
+      firstName: users.firstName,
+      lastName: users.lastName,
+      action: auditLog.action,
+      tableName: auditLog.tableName,
+      recordId: auditLog.recordId,
+      oldValues: auditLog.oldValues,
+      newValues: auditLog.newValues,
+      timestamp: auditLog.timestamp,
+      ipAddress: auditLog.ipAddress,
+      userAgent: auditLog.userAgent
+    })
+    .from(auditLog)
+    .leftJoin(users, eq(auditLog.userId, users.id.toString()));
+    
     if (filters?.userId && filters?.tableName) {
-      return await db.select().from(auditLog)
+      return await query
         .where(and(
           eq(auditLog.userId, filters.userId.toString()),
           eq(auditLog.tableName, filters.tableName)
@@ -635,17 +653,17 @@ export class DatabaseStorage implements IStorage {
         .orderBy(desc(auditLog.timestamp))
         .limit(limit);
     } else if (filters?.userId) {
-      return await db.select().from(auditLog)
+      return await query
         .where(eq(auditLog.userId, filters.userId.toString()))
         .orderBy(desc(auditLog.timestamp))
         .limit(limit);
     } else if (filters?.tableName) {
-      return await db.select().from(auditLog)
+      return await query
         .where(eq(auditLog.tableName, filters.tableName))
         .orderBy(desc(auditLog.timestamp))
         .limit(limit);
     } else {
-      return await db.select().from(auditLog)
+      return await query
         .orderBy(desc(auditLog.timestamp))
         .limit(limit);
     }

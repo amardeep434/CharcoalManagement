@@ -111,6 +111,7 @@ export const users = pgTable("users", {
   companyAccess: jsonb("company_access"), // Array of company IDs user can access
   permissions: jsonb("permissions"), // Specific permissions object
   isActive: boolean("is_active").notNull().default(true),
+  forcePasswordChange: boolean("force_password_change").notNull().default(false),
   lastLoginAt: timestamp("last_login_at", { mode: "date" }),
   createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { mode: "date" }).notNull().defaultNow(),
