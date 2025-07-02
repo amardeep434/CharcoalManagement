@@ -8,24 +8,43 @@ import { dbStorage as storage } from "./storage-db";
 
 export function getSession() {
   const sessionTtl = 7 * 24 * 60 * 60 * 1000; // 1 week
-  const pgStore = connectPg(session);
-  const sessionStore = new pgStore({
-    conString: process.env.DATABASE_URL,
-    createTableIfMissing: false,
-    ttl: sessionTtl,
-    tableName: "sessions",
-  });
-  return session({
-    secret: process.env.SESSION_SECRET || 'your-secret-key',
-    store: sessionStore,
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      httpOnly: true,
-      secure: false, // Set to true in production with HTTPS
-      maxAge: sessionTtl,
-    },
-  });
+  
+  try {
+    const pgStore = connectPg(session);
+    const sessionStore = new pgStore({
+      conString: process.env.DATABASE_URL,
+      createTableIfMissing: true,
+      ttl: sessionTtl,
+      tableName: "sessions",
+    });
+    
+    return session({
+      secret: process.env.SESSION_SECRET || 'your-secret-key',
+      store: sessionStore,
+      resave: false,
+      saveUninitialized: false,
+      cookie: {
+        httpOnly: false, // Allow client access for token fallback
+        secure: false, // Set to true in production with HTTPS
+        maxAge: sessionTtl,
+        sameSite: 'lax',
+      },
+    });
+  } catch (error) {
+    console.warn('PostgreSQL session store failed, using memory store:', error);
+    // Fallback to memory store for development
+    return session({
+      secret: process.env.SESSION_SECRET || 'your-secret-key',
+      resave: false,
+      saveUninitialized: false,
+      cookie: {
+        httpOnly: false,
+        secure: false,
+        maxAge: sessionTtl,
+        sameSite: 'lax',
+      },
+    });
+  }
 }
 
 export async function setupAuth(app: Express) {
