@@ -1,9 +1,12 @@
 import { db } from "./db";
 import { 
-  companies, suppliers, hotels, sales, payments, purchases, purchasePayments,
+  companies, suppliers, hotels, sales, payments, purchases, purchasePayments, users, auditLog,
   type Company, type Supplier, type Hotel, type Sale, type Payment, type Purchase, type PurchasePayment,
-  type InsertCompany, type InsertSupplier, type InsertHotel, type InsertSale, type InsertPayment, type InsertPurchase, type InsertPurchasePayment,
-  type SaleWithHotel, type PurchaseWithSupplier, type HotelWithStats, type SupplierWithStats, type CompanyWithStats, type DashboardStats 
+  type User, type AuditLog,
+  type InsertCompany, type InsertSupplier, type InsertHotel, type InsertSale, type InsertPayment, 
+  type InsertPurchase, type InsertPurchasePayment, type InsertUser, type InsertAuditLog,
+  type SaleWithHotel, type PurchaseWithSupplier, type HotelWithStats, type SupplierWithStats, 
+  type CompanyWithStats, type DashboardStats 
 } from "@shared/schema";
 import { eq, and, desc, sql } from "drizzle-orm";
 import type { IStorage } from "./storage-new";
@@ -565,6 +568,87 @@ export class DatabaseStorage implements IStorage {
   async getRecentPurchases(limit: number = 10, companyId?: number): Promise<PurchaseWithSupplier[]> {
     const purchasesWithSuppliers = await this.getPurchasesWithSuppliers(companyId);
     return purchasesWithSuppliers.slice(0, limit);
+  }
+
+  // Users
+  async getUsers(): Promise<User[]> {
+    return await db.select().from(users);
+  }
+
+  async getUser(id: number): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user || undefined;
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user || undefined;
+  }
+
+  async createUser(insertUser: InsertUser): Promise<User> {
+    const [user] = await db
+      .insert(users)
+      .values(insertUser)
+      .returning();
+    return user;
+  }
+
+  async updateUser(id: number, userUpdate: Partial<InsertUser>): Promise<User | undefined> {
+    const [user] = await db
+      .update(users)
+      .set(userUpdate)
+      .where(eq(users.id, id))
+      .returning();
+    return user || undefined;
+  }
+
+  async updateUserLastLogin(id: number): Promise<void> {
+    await db
+      .update(users)
+      .set({ lastLoginAt: new Date() })
+      .where(eq(users.id, id));
+  }
+
+  async deleteUser(id: number): Promise<boolean> {
+    const result = await db.delete(users).where(eq(users.id, id));
+    return result.rowCount > 0;
+  }
+
+  // Audit Log
+  async createAuditLog(insertLog: InsertAuditLog): Promise<AuditLog> {
+    const [log] = await db
+      .insert(auditLog)
+      .values(insertLog)
+      .returning();
+    return log;
+  }
+
+  async getAuditLogs(filters?: { userId?: number; tableName?: string; limit?: number }): Promise<AuditLog[]> {
+    const limit = filters?.limit || 50;
+    
+    if (filters?.userId && filters?.tableName) {
+      return await db.select().from(auditLog)
+        .where(and(
+          eq(auditLog.userId, filters.userId.toString()),
+          eq(auditLog.tableName, filters.tableName)
+        ))
+        .orderBy(desc(auditLog.timestamp))
+        .limit(limit);
+    } else if (filters?.userId) {
+      return await db.select().from(auditLog)
+        .where(eq(auditLog.userId, filters.userId.toString()))
+        .orderBy(desc(auditLog.timestamp))
+        .limit(limit);
+    } else if (filters?.tableName) {
+      return await db.select().from(auditLog)
+        .where(eq(auditLog.tableName, filters.tableName))
+        .orderBy(desc(auditLog.timestamp))
+        .limit(limit);
+    } else {
+      return await db.select().from(auditLog)
+        .orderBy(desc(auditLog.timestamp))
+        .limit(limit);
+    }
   }
 }
 

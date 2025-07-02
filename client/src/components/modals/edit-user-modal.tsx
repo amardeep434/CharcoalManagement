@@ -1,27 +1,38 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { Button } from "@/components/ui/button";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import type { User } from "@shared/schema";
+import { insertUserSchema, type User } from "@shared/schema";
+import { z } from "zod";
 
-const editUserSchema = z.object({
-  username: z.string().min(3, "Username must be at least 3 characters"),
-  email: z.string().email("Please enter a valid email"),
-  firstName: z.string().min(1, "First name is required"),
-  lastName: z.string().min(1, "Last name is required"),
-  role: z.enum(["admin", "manager", "operator", "viewer"], {
-    required_error: "Please select a role",
-  }),
-  isActive: z.boolean(),
-  password: z.string().min(6, "Password must be at least 6 characters").optional().or(z.literal("")),
+const editUserSchema = insertUserSchema.omit({ password: true }).extend({
+  password: z.string().optional(),
 });
 
 type EditUserForm = z.infer<typeof editUserSchema>;
@@ -33,6 +44,7 @@ interface EditUserModalProps {
 }
 
 export function EditUserModal({ user, isOpen, onClose }: EditUserModalProps) {
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -40,87 +52,59 @@ export function EditUserModal({ user, isOpen, onClose }: EditUserModalProps) {
     resolver: zodResolver(editUserSchema),
     defaultValues: {
       username: user.username,
-      email: user.email || "",
-      firstName: user.firstName || "",
-      lastName: user.lastName || "",
-      role: user.role as "admin" | "manager" | "operator" | "viewer",
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      role: user.role,
       isActive: user.isActive,
       password: "",
     },
   });
 
   const updateUserMutation = useMutation({
-    mutationFn: async (data: EditUserForm) => {
-      const updateData = { ...data };
-      if (!updateData.password) {
-        delete updateData.password;
+    mutationFn: (data: EditUserForm) => {
+      const payload = { ...data };
+      if (!payload.password) {
+        delete payload.password;
       }
-      const response = await apiRequest("PATCH", `/api/users/${user.id}`, updateData);
-      return response.json();
+      return apiRequest(`/api/users/${user.id}`, "PATCH", payload);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/users"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/audit-logs"] });
       toast({
-        title: "User updated",
-        description: "User has been successfully updated",
+        title: "Success",
+        description: "User updated successfully",
       });
       onClose();
     },
     onError: (error: any) => {
+      console.error("Error updating user:", error);
       toast({
-        title: "Update failed",
+        title: "Error",
         description: error.message || "Failed to update user",
         variant: "destructive",
       });
     },
   });
 
-  const onSubmit = (data: EditUserForm) => {
-    updateUserMutation.mutate(data);
+  const onSubmit = async (data: EditUserForm) => {
+    setIsLoading(true);
+    try {
+      await updateUserMutation.mutateAsync(data);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Edit User</DialogTitle>
-          <DialogDescription>
-            Update user information and permissions. Leave password blank to keep current password.
-          </DialogDescription>
         </DialogHeader>
-
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="firstName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>First Name</FormLabel>
-                    <FormControl>
-                      <Input {...field} placeholder="Enter first name" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="lastName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Last Name</FormLabel>
-                    <FormControl>
-                      <Input {...field} placeholder="Enter last name" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
             <FormField
               control={form.control}
               name="username"
@@ -142,26 +126,42 @@ export function EditUserModal({ user, isOpen, onClose }: EditUserModalProps) {
                 <FormItem>
                   <FormLabel>Email</FormLabel>
                   <FormControl>
-                    <Input {...field} type="email" placeholder="Enter email address" />
+                    <Input {...field} type="email" placeholder="Enter email" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>New Password (optional)</FormLabel>
-                  <FormControl>
-                    <Input {...field} type="password" placeholder="Leave blank to keep current password" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="firstName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>First Name</FormLabel>
+                    <FormControl>
+                      <Input {...field} placeholder="First name" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="lastName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Last Name</FormLabel>
+                    <FormControl>
+                      <Input {...field} placeholder="Last name" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
             <FormField
               control={form.control}
@@ -176,10 +176,10 @@ export function EditUserModal({ user, isOpen, onClose }: EditUserModalProps) {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="admin">Admin - Full system access</SelectItem>
-                      <SelectItem value="manager">Manager - Business operations</SelectItem>
-                      <SelectItem value="operator">Operator - Data entry and updates</SelectItem>
-                      <SelectItem value="viewer">Viewer - Read-only access</SelectItem>
+                      <SelectItem value="admin">Admin</SelectItem>
+                      <SelectItem value="manager">Manager</SelectItem>
+                      <SelectItem value="operator">Operator</SelectItem>
+                      <SelectItem value="viewer">Viewer</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -189,9 +189,23 @@ export function EditUserModal({ user, isOpen, onClose }: EditUserModalProps) {
 
             <FormField
               control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>New Password (leave blank to keep current)</FormLabel>
+                  <FormControl>
+                    <Input {...field} type="password" placeholder="Enter new password" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
               name="isActive"
               render={({ field }) => (
-                <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
                   <FormControl>
                     <Checkbox
                       checked={field.value}
@@ -200,29 +214,22 @@ export function EditUserModal({ user, isOpen, onClose }: EditUserModalProps) {
                   </FormControl>
                   <div className="space-y-1 leading-none">
                     <FormLabel>
-                      Active user
+                      Active User
                     </FormLabel>
                     <p className="text-sm text-muted-foreground">
-                      Inactive users cannot log in
+                      Uncheck to deactivate the user account
                     </p>
                   </div>
                 </FormItem>
               )}
             />
 
-            <div className="flex justify-end space-x-2 pt-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={onClose}
-              >
+            <div className="flex justify-end gap-2 pt-4">
+              <Button type="button" variant="outline" onClick={onClose}>
                 Cancel
               </Button>
-              <Button 
-                type="submit" 
-                disabled={updateUserMutation.isPending}
-              >
-                {updateUserMutation.isPending ? "Updating..." : "Update User"}
+              <Button type="submit" disabled={isLoading}>
+                {isLoading ? "Updating..." : "Update User"}
               </Button>
             </div>
           </form>

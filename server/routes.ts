@@ -1,6 +1,6 @@
 import type { Express, Request } from "express";
 import { createServer, type Server } from "http";
-import { storage } from "./storage";
+import { dbStorage as storage } from "./storage";
 import { 
   insertCompanySchema, insertSupplierSchema, insertHotelSchema, insertSaleSchema, insertPaymentSchema, 
   insertPurchaseSchema, insertPurchasePaymentSchema, excelImportSchema, purchaseImportSchema, insertUserSchema,
@@ -150,8 +150,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/users', requireAuth, async (req, res) => {
     try {
-      const validatedData = insertUserSchema.parse(req.body);
-      const hashedPassword = await bcrypt.hash(validatedData.passwordHash, 10);
+      // Extract password and validate the rest  
+      const { password, ...userData } = req.body;
+      
+      // Validate password
+      if (!password || password.length < 6) {
+        return res.status(400).json({ message: "Password must be at least 6 characters" });
+      }
+      
+      // Validate other user data (without passwordHash)
+      const userSchema = z.object({
+        username: z.string().min(1),
+        email: z.string().email().optional(),
+        firstName: z.string().optional(),
+        lastName: z.string().optional(),
+        role: z.string().default("viewer"),
+        isActive: z.boolean().default(true),
+        companyAccess: z.any().optional(),
+        permissions: z.any().optional(),
+      });
+      
+      const validatedData = userSchema.parse(userData);
+      const hashedPassword = await bcrypt.hash(password, 10);
       
       const user = await storage.createUser({
         ...validatedData,

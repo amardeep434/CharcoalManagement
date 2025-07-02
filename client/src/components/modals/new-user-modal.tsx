@@ -1,27 +1,40 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { Button } from "@/components/ui/button";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import { insertUserSchema } from "@shared/schema";
+import { z } from "zod";
 
-const newUserSchema = z.object({
-  username: z.string().min(3, "Username must be at least 3 characters"),
-  email: z.string().email("Please enter a valid email"),
+const createUserSchema = insertUserSchema.extend({
   password: z.string().min(6, "Password must be at least 6 characters"),
-  firstName: z.string().min(1, "First name is required"),
-  lastName: z.string().min(1, "Last name is required"),
-  role: z.enum(["admin", "manager", "operator", "viewer"], {
-    required_error: "Please select a role",
-  }),
 });
 
-type NewUserForm = z.infer<typeof newUserSchema>;
+type CreateUserForm = z.infer<typeof createUserSchema>;
 
 interface NewUserModalProps {
   isOpen: boolean;
@@ -29,90 +42,62 @@ interface NewUserModalProps {
 }
 
 export function NewUserModal({ isOpen, onClose }: NewUserModalProps) {
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const form = useForm<NewUserForm>({
-    resolver: zodResolver(newUserSchema),
+  const form = useForm<CreateUserForm>({
+    resolver: zodResolver(createUserSchema),
     defaultValues: {
       username: "",
       email: "",
-      password: "",
       firstName: "",
       lastName: "",
       role: "viewer",
+      password: "",
+      isActive: true,
     },
   });
 
   const createUserMutation = useMutation({
-    mutationFn: async (data: NewUserForm) => {
-      const response = await apiRequest("POST", "/api/users", data);
-      return response.json();
-    },
+    mutationFn: (data: CreateUserForm) => apiRequest("/api/users", "POST", data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/users"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/audit-logs"] });
       toast({
-        title: "User created",
-        description: "New user has been successfully created",
+        title: "Success",
+        description: "User created successfully",
       });
-      form.reset();
       onClose();
+      form.reset();
     },
     onError: (error: any) => {
+      console.error("Error creating user:", error);
       toast({
-        title: "Creation failed",
+        title: "Error",
         description: error.message || "Failed to create user",
         variant: "destructive",
       });
     },
   });
 
-  const onSubmit = (data: NewUserForm) => {
-    createUserMutation.mutate(data);
+  const onSubmit = async (data: CreateUserForm) => {
+    setIsLoading(true);
+    try {
+      await createUserMutation.mutateAsync(data);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Add New User</DialogTitle>
-          <DialogDescription>
-            Create a new user account with the specified role and permissions.
-          </DialogDescription>
+          <DialogTitle>Create New User</DialogTitle>
         </DialogHeader>
-
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="firstName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>First Name</FormLabel>
-                    <FormControl>
-                      <Input {...field} placeholder="Enter first name" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="lastName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Last Name</FormLabel>
-                    <FormControl>
-                      <Input {...field} placeholder="Enter last name" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
             <FormField
               control={form.control}
               name="username"
@@ -134,8 +119,62 @@ export function NewUserModal({ isOpen, onClose }: NewUserModalProps) {
                 <FormItem>
                   <FormLabel>Email</FormLabel>
                   <FormControl>
-                    <Input {...field} type="email" placeholder="Enter email address" />
+                    <Input {...field} type="email" placeholder="Enter email" />
                   </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="firstName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>First Name</FormLabel>
+                    <FormControl>
+                      <Input {...field} placeholder="First name" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="lastName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Last Name</FormLabel>
+                    <FormControl>
+                      <Input {...field} placeholder="Last name" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <FormField
+              control={form.control}
+              name="role"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Role</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a role" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="admin">Admin</SelectItem>
+                      <SelectItem value="manager">Manager</SelectItem>
+                      <SelectItem value="operator">Operator</SelectItem>
+                      <SelectItem value="viewer">Viewer</SelectItem>
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
@@ -155,46 +194,12 @@ export function NewUserModal({ isOpen, onClose }: NewUserModalProps) {
               )}
             />
 
-            <FormField
-              control={form.control}
-              name="role"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Role</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a role" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="admin">Admin - Full system access</SelectItem>
-                      <SelectItem value="manager">Manager - Business operations</SelectItem>
-                      <SelectItem value="operator">Operator - Data entry and updates</SelectItem>
-                      <SelectItem value="viewer">Viewer - Read-only access</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <div className="flex justify-end space-x-2 pt-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => {
-                  form.reset();
-                  onClose();
-                }}
-              >
+            <div className="flex justify-end gap-2 pt-4">
+              <Button type="button" variant="outline" onClick={onClose}>
                 Cancel
               </Button>
-              <Button 
-                type="submit" 
-                disabled={createUserMutation.isPending}
-              >
-                {createUserMutation.isPending ? "Creating..." : "Create User"}
+              <Button type="submit" disabled={isLoading}>
+                {isLoading ? "Creating..." : "Create User"}
               </Button>
             </div>
           </form>

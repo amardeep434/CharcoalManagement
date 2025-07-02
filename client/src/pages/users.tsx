@@ -7,8 +7,8 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { Plus, Pencil, Trash2, Shield, Eye, Users as UsersIcon, UserCheck } from "lucide-react";
 import type { User } from "@shared/schema";
-// import { NewUserModal } from "@/components/modals/new-user-modal";
-// import { EditUserModal } from "@/components/modals/edit-user-modal";
+import { NewUserModal } from "@/components/modals/new-user-modal";
+import { EditUserModal } from "@/components/modals/edit-user-modal";
 
 export default function UsersPage() {
   const [showNewUserModal, setShowNewUserModal] = useState(false);
@@ -206,7 +206,7 @@ export default function UsersPage() {
         )}
       </div>
 
-      {/* <NewUserModal
+      <NewUserModal
         isOpen={showNewUserModal}
         onClose={() => setShowNewUserModal(false)}
       />
@@ -217,7 +217,7 @@ export default function UsersPage() {
           isOpen={!!editingUser}
           onClose={() => setEditingUser(null)}
         />
-      )} */}
+      )}
     </div>
   );
 }
