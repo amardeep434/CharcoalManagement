@@ -1,2 +1,2 @@
-// Fallback to memory storage due to database connectivity issues
-export * from "./storage-new";
+// Using database storage for persistent data including audit logs
+export * from "./storage-db";

@@ -1,6 +1,6 @@
 import type { Express, Request } from "express";
 import { createServer, type Server } from "http";
-import { storage } from "./storage";
+import { dbStorage as storage } from "./storage";
 import { 
   insertCompanySchema, insertSupplierSchema, insertHotelSchema, insertSaleSchema, insertPaymentSchema, 
   insertPurchaseSchema, insertPurchasePaymentSchema, excelImportSchema, purchaseImportSchema, insertUserSchema,
@@ -20,148 +20,15 @@ interface MulterRequest extends Request {
 }
 
 const upload = multer({ storage: multer.memoryStorage() });
-const PgSession = connectPgSimple(session);
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // PostgreSQL session store
-  const sessionStore = new PgSession({
-    pool: pool,
-    tableName: 'session',
-    createTableIfMissing: true,
-  });
+  // Authentication is configured in replitAuth.ts and applied in index.ts
+  // No need to duplicate session configuration here
 
-  // Session-based authentication setup with PostgreSQL store
-  app.use(session({
-    store: sessionStore,
-    secret: process.env.SESSION_SECRET || 'charcoal-biz-secret-key',
-    resave: false,
-    saveUninitialized: true, // Create session for all requests
-    rolling: true, // Reset expiry on activity
-    cookie: { 
-      secure: false, // Set to true in production with HTTPS
-      httpOnly: false, // Allow JavaScript access for debugging
-      maxAge: 24 * 60 * 60 * 1000, // 24 hours
-      sameSite: 'lax', // Better compatibility for development
-      domain: undefined, // Don't restrict domain for development
-      path: '/' // Ensure cookie is available for all paths
-    },
-    name: 'connect.sid' // Use default session cookie name
-  }));
-
-  // Use the imported authentication middleware with Authorization header support
-  const requireAuth = isAuthenticated;
-
-  // Authentication routes
-  app.post('/api/auth/login', async (req, res) => {
-    try {
-      const { username, password } = req.body;
-      
-      if (!username || !password) {
-        return res.status(400).json({ message: "Username and password required" });
-      }
-
-      const user = await storage.getUserByUsername(username);
-      if (!user || !user.isActive) {
-        return res.status(401).json({ message: "Invalid credentials" });
-      }
-
-      const isValid = await bcrypt.compare(password, user.passwordHash);
-      if (!isValid) {
-        return res.status(401).json({ message: "Invalid credentials" });
-      }
-
-      // Update last login
-      await storage.updateUserLastLogin(user.id);
-
-      // Store user in session AND generate auth token
-      (req.session as any).userId = user.id;
-      console.log('Login - Session ID after setting userId:', req.sessionID);
-      console.log('Login - Session after setting userId:', req.session);
-      console.log('Login - userId set to:', user.id);
-      
-      // Generate simple auth token as fallback
-      const authToken = Buffer.from(`${user.id}:${req.sessionID}:${Date.now()}`).toString('base64');
-      (req.session as any).authToken = authToken;
-      
-      // Explicitly save session to ensure it's written to the database
-      await new Promise<void>((resolve, reject) => {
-        req.session.save((err) => {
-          if (err) {
-            console.error('Session save error:', err);
-            reject(err);
-          } else {
-            console.log('Session saved successfully');
-            resolve();
-          }
-        });
-      });
-      
-      // Log the login
-      await storage.createAuditLog({
-        userId: user.id.toString(),
-        action: 'LOGIN',
-        tableName: 'users',
-        recordId: user.id,
-        newValues: null,
-        oldValues: null,
-        ipAddress: req.ip,
-        userAgent: req.get('User-Agent'),
-      });
-
-      res.json({ 
-        id: user.id,
-        username: user.username,
-        email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        role: user.role,
-        authToken: authToken
-      });
-    } catch (error) {
-      console.error("Login error:", error);
-      res.status(500).json({ message: "Login failed" });
-    }
-  });
-
-  app.post('/api/auth/logout', (req, res) => {
-    (req.session as any).destroy((err: any) => {
-      if (err) {
-        return res.status(500).json({ message: "Logout failed" });
-      }
-      res.clearCookie('connect.sid');
-      res.json({ message: "Logged out successfully" });
-    });
-  });
-
-  app.get('/api/auth/user', async (req, res) => {
-    const userId = (req.session as any).userId;
-    if (!userId) {
-      return res.status(401).json({ message: "Not authenticated" });
-    }
-
-    try {
-      const user = await storage.getUser(userId);
-      if (!user || !user.isActive) {
-        return res.status(401).json({ message: "User not found" });
-      }
-
-      res.json({ 
-        id: user.id,
-        username: user.username,
-        email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        role: user.role,
-        permissions: user.permissions
-      });
-    } catch (error) {
-      console.error("User fetch error:", error);
-      res.status(500).json({ message: "Failed to fetch user" });
-    }
-  });
+  // Authentication routes are handled in replitAuth.ts
 
   // User management routes (admin only)
-  app.get('/api/users', requireAuth, async (req, res) => {
+  app.get('/api/users', isAuthenticated, async (req, res) => {
     try {
       const users = await storage.getUsers();
       res.json(users.map(user => ({
@@ -181,7 +48,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/users', requireAuth, async (req, res) => {
+  app.post('/api/users', isAuthenticated, async (req, res) => {
     try {
       // Extract password and validate the rest  
       const { password, ...userData } = req.body;
@@ -238,7 +105,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch('/api/users/:id', requireAuth, async (req, res) => {
+  app.patch('/api/users/:id', isAuthenticated, async (req, res) => {
     try {
       const userId = parseInt(req.params.id);
       const updateData: any = { ...req.body };

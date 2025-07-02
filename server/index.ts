@@ -59,8 +59,14 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  // Initialize database with default data
-  await seedDatabase();
+  // Check database connectivity
+  let databaseAvailable = true;
+  try {
+    await seedDatabase();
+  } catch (error) {
+    console.warn('Database initialization failed, continuing with degraded functionality:', error);
+    databaseAvailable = false;
+  }
   
   const server = await registerRoutes(app);
 

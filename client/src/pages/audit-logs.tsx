@@ -194,7 +194,7 @@ export default function AuditLogsPage() {
                           <div>
                             <p className="text-xs font-medium text-gray-500 mb-1">OLD VALUES</p>
                             <pre className="text-xs bg-red-50 border border-red-200 rounded p-2 overflow-x-auto">
-                              {JSON.stringify(log.oldValues, null, 2)}
+                              {JSON.stringify(log.oldValues as any, null, 2)}
                             </pre>
                           </div>
                         )}
@@ -202,7 +202,7 @@ export default function AuditLogsPage() {
                           <div>
                             <p className="text-xs font-medium text-gray-500 mb-1">NEW VALUES</p>
                             <pre className="text-xs bg-green-50 border border-green-200 rounded p-2 overflow-x-auto">
-                              {JSON.stringify(log.newValues, null, 2)}
+                              {JSON.stringify(log.newValues as any, null, 2)}
                             </pre>
                           </div>
                         )}

@@ -482,7 +482,7 @@ export class DatabaseStorage implements IStorage {
     if (purchaseUpdate.companyId !== undefined) updateData.companyId = purchaseUpdate.companyId;
     if (purchaseUpdate.supplierId !== undefined) updateData.supplierId = purchaseUpdate.supplierId;
     if (purchaseUpdate.quantity !== undefined) updateData.quantity = typeof purchaseUpdate.quantity === 'number' ? purchaseUpdate.quantity.toString() : purchaseUpdate.quantity;
-    if (purchaseUpdate.ratePerKg !== undefined) updateData.ratePerKg = typeof purchaseUpdate.ratePerKg === 'number' ? purchaseUpdate.ratePerKg.toString() : purchaseUpdate.ratePerKg;
+    if (purchaseUpdate.ratePerKg !== undefined) updateData.ratePerKg = String(purchaseUpdate.ratePerKg);
     if (purchaseUpdate.totalAmount !== undefined) updateData.totalAmount = typeof purchaseUpdate.totalAmount === 'number' ? purchaseUpdate.totalAmount.toString() : purchaseUpdate.totalAmount;
     if (purchaseUpdate.ratePerTon !== undefined) updateData.ratePerTon = purchaseUpdate.ratePerTon;
     if (purchaseUpdate.notes !== undefined) updateData.notes = purchaseUpdate.notes;
