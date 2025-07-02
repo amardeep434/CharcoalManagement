@@ -304,12 +304,24 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateSale(id: number, saleUpdate: Partial<InsertSale>): Promise<Sale | undefined> {
-    const updateData = {
-      ...saleUpdate,
-      ...(saleUpdate.quantity && { quantity: saleUpdate.quantity.toString() }),
-      ...(saleUpdate.ratePerKg && { ratePerKg: saleUpdate.ratePerKg.toString() }),
-      ...(saleUpdate.totalAmount && { totalAmount: saleUpdate.totalAmount.toString() }),
-    };
+    const updateData: Partial<{
+      date: Date;
+      companyId: number;
+      hotelId: number;
+      quantity: string;
+      ratePerKg: string;
+      totalAmount: string;
+      notes: string | null;
+    }> = {};
+
+    if (saleUpdate.date !== undefined) updateData.date = saleUpdate.date;
+    if (saleUpdate.companyId !== undefined) updateData.companyId = saleUpdate.companyId;
+    if (saleUpdate.hotelId !== undefined) updateData.hotelId = saleUpdate.hotelId;
+    if (saleUpdate.quantity !== undefined) updateData.quantity = typeof saleUpdate.quantity === 'number' ? saleUpdate.quantity.toString() : saleUpdate.quantity;
+    if (saleUpdate.ratePerKg !== undefined) updateData.ratePerKg = typeof saleUpdate.ratePerKg === 'number' ? saleUpdate.ratePerKg.toString() : saleUpdate.ratePerKg;
+    if (saleUpdate.totalAmount !== undefined) updateData.totalAmount = typeof saleUpdate.totalAmount === 'number' ? saleUpdate.totalAmount.toString() : saleUpdate.totalAmount;
+    if (saleUpdate.notes !== undefined) updateData.notes = saleUpdate.notes;
+
     const [sale] = await db
       .update(sales)
       .set(updateData)
@@ -350,10 +362,20 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updatePayment(id: number, paymentUpdate: Partial<InsertPayment>): Promise<Payment | undefined> {
-    const updateData = {
-      ...paymentUpdate,
-      ...(paymentUpdate.amount && { amount: paymentUpdate.amount.toString() }),
-    };
+    const updateData: Partial<{
+      saleId: number;
+      amount: string;
+      paymentDate: Date;
+      notes: string | null;
+      paymentMethod: string | null;
+    }> = {};
+
+    if (paymentUpdate.saleId !== undefined) updateData.saleId = paymentUpdate.saleId;
+    if (paymentUpdate.amount !== undefined) updateData.amount = typeof paymentUpdate.amount === 'number' ? paymentUpdate.amount.toString() : paymentUpdate.amount;
+    if (paymentUpdate.paymentDate !== undefined) updateData.paymentDate = paymentUpdate.paymentDate;
+    if (paymentUpdate.notes !== undefined) updateData.notes = paymentUpdate.notes;
+    if (paymentUpdate.paymentMethod !== undefined) updateData.paymentMethod = paymentUpdate.paymentMethod;
+
     const [payment] = await db
       .update(payments)
       .set(updateData)
@@ -444,12 +466,28 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updatePurchase(id: number, purchaseUpdate: Partial<InsertPurchase>): Promise<Purchase | undefined> {
-    const updateData = {
-      ...purchaseUpdate,
-      ...(purchaseUpdate.quantity && { quantity: purchaseUpdate.quantity.toString() }),
-      ...(purchaseUpdate.ratePerKg && { ratePerKg: purchaseUpdate.ratePerKg.toString() }),
-      ...(purchaseUpdate.totalAmount && { totalAmount: purchaseUpdate.totalAmount.toString() }),
-    };
+    const updateData: Partial<{
+      date: Date;
+      companyId: number;
+      supplierId: number;
+      quantity: string;
+      ratePerKg: string;
+      totalAmount: string;
+      ratePerTon: number;
+      notes: string | null;
+      invoiceNumber: string | null;
+    }> = {};
+
+    if (purchaseUpdate.date !== undefined) updateData.date = purchaseUpdate.date;
+    if (purchaseUpdate.companyId !== undefined) updateData.companyId = purchaseUpdate.companyId;
+    if (purchaseUpdate.supplierId !== undefined) updateData.supplierId = purchaseUpdate.supplierId;
+    if (purchaseUpdate.quantity !== undefined) updateData.quantity = typeof purchaseUpdate.quantity === 'number' ? purchaseUpdate.quantity.toString() : purchaseUpdate.quantity;
+    if (purchaseUpdate.ratePerKg !== undefined) updateData.ratePerKg = typeof purchaseUpdate.ratePerKg === 'number' ? purchaseUpdate.ratePerKg.toString() : purchaseUpdate.ratePerKg;
+    if (purchaseUpdate.totalAmount !== undefined) updateData.totalAmount = typeof purchaseUpdate.totalAmount === 'number' ? purchaseUpdate.totalAmount.toString() : purchaseUpdate.totalAmount;
+    if (purchaseUpdate.ratePerTon !== undefined) updateData.ratePerTon = purchaseUpdate.ratePerTon;
+    if (purchaseUpdate.notes !== undefined) updateData.notes = purchaseUpdate.notes;
+    if (purchaseUpdate.invoiceNumber !== undefined) updateData.invoiceNumber = purchaseUpdate.invoiceNumber;
+
     const [purchase] = await db
       .update(purchases)
       .set(updateData)
@@ -490,10 +528,20 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updatePurchasePayment(id: number, paymentUpdate: Partial<InsertPurchasePayment>): Promise<PurchasePayment | undefined> {
-    const updateData = {
-      ...paymentUpdate,
-      ...(paymentUpdate.amount && { amount: paymentUpdate.amount.toString() }),
-    };
+    const updateData: Partial<{
+      purchaseId: number;
+      amount: string;
+      paymentDate: Date;
+      notes: string | null;
+      paymentMethod: string | null;
+    }> = {};
+
+    if (paymentUpdate.purchaseId !== undefined) updateData.purchaseId = paymentUpdate.purchaseId;
+    if (paymentUpdate.amount !== undefined) updateData.amount = typeof paymentUpdate.amount === 'number' ? paymentUpdate.amount.toString() : paymentUpdate.amount;
+    if (paymentUpdate.paymentDate !== undefined) updateData.paymentDate = paymentUpdate.paymentDate;
+    if (paymentUpdate.notes !== undefined) updateData.notes = paymentUpdate.notes;
+    if (paymentUpdate.paymentMethod !== undefined) updateData.paymentMethod = paymentUpdate.paymentMethod;
+
     const [payment] = await db
       .update(purchasePayments)
       .set(updateData)
