@@ -8,6 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { FileText, Download, Eye, Building } from "lucide-react";
 import { format } from "date-fns";
+import { getAuthHeaders } from "@/lib/queryClient";
 import type { Hotel, SaleWithHotel, Company } from "@shared/schema";
 
 interface StatementSummary {
@@ -40,7 +41,12 @@ export default function Statements() {
     queryKey: ["/api/export/statement", selectedHotelId, selectedCompanyId],
     queryFn: async () => {
       const url = `/api/export/statement/${selectedHotelId}?companyId=${selectedCompanyId}`;
-      const response = await fetch(url);
+      const response = await fetch(url, {
+        credentials: "include",
+        headers: {
+          ...getAuthHeaders()
+        }
+      });
       if (!response.ok) throw new Error('Failed to fetch statement');
       return response.json();
     },

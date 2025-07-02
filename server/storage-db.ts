@@ -293,7 +293,7 @@ export class DatabaseStorage implements IStorage {
     const saleData = {
       ...insertSale,
       quantity: insertSale.quantity.toString(),
-      ratePerTon: insertSale.ratePerTon.toString(),
+      ratePerKg: insertSale.ratePerKg.toString(),
       totalAmount: insertSale.totalAmount.toString(),
     };
     const [sale] = await db
@@ -307,7 +307,7 @@ export class DatabaseStorage implements IStorage {
     const updateData = {
       ...saleUpdate,
       ...(saleUpdate.quantity && { quantity: saleUpdate.quantity.toString() }),
-      ...(saleUpdate.ratePerTon && { ratePerTon: saleUpdate.ratePerTon.toString() }),
+      ...(saleUpdate.ratePerKg && { ratePerKg: saleUpdate.ratePerKg.toString() }),
       ...(saleUpdate.totalAmount && { totalAmount: saleUpdate.totalAmount.toString() }),
     };
     const [sale] = await db

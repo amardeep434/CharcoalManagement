@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
+import { getAuthHeaders } from "@/lib/queryClient";
 import { Upload, FileSpreadsheet, CheckCircle, XCircle, AlertCircle } from "lucide-react";
 
 interface ImportResult {
@@ -31,6 +32,9 @@ export default function Import() {
         method: "POST",
         body: formData,
         credentials: "include",
+        headers: {
+          ...getAuthHeaders()
+        }
       });
 
       if (!response.ok) {

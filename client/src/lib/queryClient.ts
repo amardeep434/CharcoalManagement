@@ -19,7 +19,7 @@ export function getAuthToken(): string | null {
   return authToken;
 }
 
-function getAuthHeaders(): Record<string, string> {
+export function getAuthHeaders(): Record<string, string> {
   const token = getAuthToken();
   const headers: Record<string, string> = {};
   
