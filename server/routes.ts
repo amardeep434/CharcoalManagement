@@ -87,6 +87,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log('Login - Session after setting userId:', req.session);
       console.log('Login - userId set to:', user.id);
       
+      // Explicitly save session to ensure it's written to the database
+      await new Promise<void>((resolve, reject) => {
+        req.session.save((err) => {
+          if (err) {
+            console.error('Session save error:', err);
+            reject(err);
+          } else {
+            console.log('Session saved successfully');
+            resolve();
+          }
+        });
+      });
+      
       // Log the login
       await storage.createAuditLog({
         userId: user.id.toString(),
