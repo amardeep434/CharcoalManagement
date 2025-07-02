@@ -10,7 +10,9 @@ import { isAuthenticated, requireRole, requirePermission, auditLog } from "./rep
 import multer from "multer";
 import bcrypt from "bcryptjs";
 import session from "express-session";
+import connectPgSimple from "connect-pg-simple";
 import { z } from "zod";
+import { pool } from "./db";
 
 // Extend Request type to include file property
 interface MulterRequest extends Request {
@@ -18,10 +20,19 @@ interface MulterRequest extends Request {
 }
 
 const upload = multer({ storage: multer.memoryStorage() });
+const PgSession = connectPgSimple(session);
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Simple session-based authentication setup
+  // PostgreSQL session store
+  const sessionStore = new PgSession({
+    pool: pool,
+    tableName: 'session',
+    createTableIfMissing: true,
+  });
+
+  // Session-based authentication setup with PostgreSQL store
   app.use(session({
+    store: sessionStore,
     secret: process.env.SESSION_SECRET || 'charcoal-biz-secret-key',
     resave: false,
     saveUninitialized: false,
