@@ -37,7 +37,7 @@ function Router() {
   return (
     <div className="min-h-screen flex bg-gray-50">
       <Sidebar />
-      <main className="flex-1 overflow-auto">
+      <main className="flex-1 overflow-auto pt-16 lg:pt-0">
         <Switch>
           <Route path="/" component={Dashboard} />
           <Route path="/sales" component={Sales} />
