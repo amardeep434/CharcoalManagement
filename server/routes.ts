@@ -8,7 +8,7 @@ import {
 } from "@shared/schema";
 import { isAuthenticated, requireRole, requirePermission, auditLog } from "./replitAuth";
 import multer from "multer";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import session from "express-session";
 import { z } from "zod";
 

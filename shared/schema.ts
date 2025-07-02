@@ -151,7 +151,7 @@ export const insertSaleSchema = createInsertSchema(sales).omit({
 }).extend({
   date: z.string().transform((str) => new Date(str)),
   quantity: z.number().positive(),
-  ratePerTon: z.number().positive(),
+  ratePerKg: z.string().transform((str) => parseFloat(str)),
   totalAmount: z.number().positive(),
 });
 
