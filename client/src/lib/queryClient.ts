@@ -23,8 +23,11 @@ function getAuthHeaders(): Record<string, string> {
   const token = getAuthToken();
   const headers: Record<string, string> = {};
   
+  console.log('getAuthHeaders - token:', token);
+  
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
+    console.log('getAuthHeaders - setting Authorization header:', headers['Authorization']);
   }
   
   return headers;

@@ -102,14 +102,20 @@ export const isAuthenticated: RequestHandler = async (req, res, next) => {
   console.log('RequireAuth - Cookie header:', req.headers.cookie);
 
   let userId = (req.session as any)?.userId;
+  console.log('RequireAuth - Initial userId:', userId, 'type:', typeof userId);
   
   // If no session userId, check for authorization header as fallback
   if (!userId) {
+    console.log('RequireAuth - No userId, checking authorization header...');
     const authHeader = req.headers.authorization;
-    console.log('RequireAuth - Auth header:', authHeader);
+    console.log('RequireAuth - Auth header check:', { 
+      hasAuthHeader: !!authHeader, 
+      authHeader: authHeader?.substring(0, 20) + '...' 
+    });
     
     if (authHeader && authHeader.startsWith('Bearer ')) {
       const token = authHeader.substring(7);
+      console.log('RequireAuth - Processing token:', token.substring(0, 20) + '...');
       try {
         const decoded = Buffer.from(token, 'base64').toString('utf-8');
         const [tokenUserId, sessionId, timestamp] = decoded.split(':');
@@ -118,13 +124,18 @@ export const isAuthenticated: RequestHandler = async (req, res, next) => {
         // Simple validation - token should be recent (within 24 hours)
         const tokenTime = parseInt(timestamp);
         const now = Date.now();
+        console.log('RequireAuth - Token validation:', { tokenTime, now, diff: now - tokenTime });
         if (now - tokenTime < 24 * 60 * 60 * 1000) {
           userId = parseInt(tokenUserId);
           console.log('RequireAuth - Using token auth, userId:', userId);
+        } else {
+          console.log('RequireAuth - Token expired');
         }
       } catch (error) {
         console.log('RequireAuth - Token decode error:', error);
       }
+    } else {
+      console.log('RequireAuth - No valid Bearer token found');
     }
   }
 

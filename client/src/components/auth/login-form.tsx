@@ -37,9 +37,13 @@ export function LoginForm() {
       return response.json();
     },
     onSuccess: (user: any) => {
+      console.log('Login success - user data:', user);
       // Store auth token if provided
       if (user.authToken) {
+        console.log('Login success - storing auth token:', user.authToken);
         setAuthToken(user.authToken);
+      } else {
+        console.log('Login success - no auth token in response');
       }
       
       queryClient.setQueryData(["/api/auth/user"], user);

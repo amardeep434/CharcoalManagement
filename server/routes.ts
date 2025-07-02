@@ -44,20 +44,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   }));
 
-  // Simple authentication middleware
-  const requireAuth = (req: any, res: any, next: any) => {
-    console.log('RequireAuth - Session ID:', req.sessionID);
-    console.log('RequireAuth - Session:', req.session);
-    console.log('RequireAuth - Cookie header:', req.headers.cookie);
-    
-    const userId = (req.session as any).userId;
-    if (!userId) {
-      console.log('RequireAuth - No userId found in session');
-      return res.status(401).json({ message: "Authentication required" });
-    }
-    console.log('RequireAuth - Success, userId:', userId);
-    next();
-  };
+  // Use the imported authentication middleware with Authorization header support
+  const requireAuth = isAuthenticated;
 
   // Authentication routes
   app.post('/api/auth/login', async (req, res) => {
