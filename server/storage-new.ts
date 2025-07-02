@@ -233,7 +233,7 @@ export class MemStorage implements IStorage {
   }
 
   private async createDefaultAdmin() {
-    const bcrypt = await import('bcrypt');
+    const bcrypt = await import('bcryptjs');
     const hashedPassword = await bcrypt.hash('admin123', 10);
     
     const defaultAdmin: User = {

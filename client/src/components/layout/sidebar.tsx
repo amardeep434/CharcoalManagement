@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import type { User } from "@shared/schema";
 
 const navItems = [
   { path: "/", label: "Dashboard", icon: ChartLine },
@@ -27,7 +28,11 @@ export function Sidebar() {
       return response.json();
     },
     onSuccess: () => {
+      // Remove user data from cache and invalidate auth queries
+      queryClient.setQueryData(["/api/auth/user"], null);
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
       queryClient.clear();
+      
       toast({
         title: "Logged out",
         description: "You have been logged out successfully",
@@ -35,7 +40,7 @@ export function Sidebar() {
     },
     onError: () => {
       toast({
-        title: "Logout failed",
+        title: "Logout failed", 
         description: "There was an error logging out",
         variant: "destructive",
       });
@@ -56,8 +61,8 @@ export function Sidebar() {
         </div>
         {user && (
           <div className="mt-4 text-sm text-gray-600">
-            Welcome, {(user as any).firstName || (user as any).username}
-            <div className="text-xs text-gray-500">{(user as any).role}</div>
+            Welcome, {user.firstName || user.username}
+            <div className="text-xs text-gray-500">{user.role}</div>
           </div>
         )}
       </div>
