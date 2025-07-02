@@ -35,13 +35,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     store: sessionStore,
     secret: process.env.SESSION_SECRET || 'charcoal-biz-secret-key',
     resave: false,
-    saveUninitialized: false,
+    saveUninitialized: true, // Create session for all requests
+    rolling: true, // Reset expiry on activity
     cookie: { 
       secure: false, // Set to true in production with HTTPS
       httpOnly: false, // Allow JavaScript access for debugging
       maxAge: 24 * 60 * 60 * 1000, // 24 hours
       sameSite: 'lax', // Better compatibility for development
-      domain: undefined // Don't restrict domain for development
+      domain: undefined, // Don't restrict domain for development
+      path: '/' // Ensure cookie is available for all paths
     },
     name: 'connect.sid' // Use default session cookie name
   }));

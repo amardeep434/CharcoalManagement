@@ -46,7 +46,7 @@ export async function apiRequest(
   data?: unknown | undefined,
 ): Promise<Response> {
   const headers = {
-    ...(data ? { "Content-Type": "application/json" } : {}),
+    'Content-Type': 'application/json',
     ...getAuthHeaders()
   };
 
@@ -55,6 +55,7 @@ export async function apiRequest(
     headers,
     body: data ? JSON.stringify(data) : undefined,
     credentials: "include",
+    mode: 'cors'
   });
 
   await throwIfResNotOk(res);
@@ -67,9 +68,16 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
+    const headers = {
+      'Content-Type': 'application/json',
+      ...getAuthHeaders()
+    };
+
     const res = await fetch(queryKey[0] as string, {
-      headers: getAuthHeaders(),
+      method: 'GET',
+      headers,
       credentials: "include",
+      mode: 'cors'
     });
 
     if (unauthorizedBehavior === "returnNull" && res.status === 401) {

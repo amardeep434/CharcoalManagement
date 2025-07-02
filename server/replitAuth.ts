@@ -128,6 +128,11 @@ export const isAuthenticated: RequestHandler = async (req, res, next) => {
         if (now - tokenTime < 24 * 60 * 60 * 1000) {
           userId = parseInt(tokenUserId);
           console.log('RequireAuth - Using token auth, userId:', userId);
+          // Store userId in session for future requests
+          (req.session as any).userId = userId;
+          req.session.save((err) => {
+            if (err) console.error('Session save error:', err);
+          });
         } else {
           console.log('RequireAuth - Token expired');
         }
