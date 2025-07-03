@@ -149,6 +149,29 @@ A comprehensive deployment guide (`DEPLOYMENT_GUIDE.md`) provides detailed instr
 - Excel import/export functionality
 - Multi-company architecture support
 
+### Automated Migration System
+The application now includes an automated system to ensure the SQL migration file stays synchronized with schema changes:
+
+- **Migration Generator**: Automatically creates `database_setup.sql` from current schema
+- **Schema Watcher**: Monitors `shared/schema.ts` for changes and regenerates migration file
+- **Development Scripts**: Easy-to-use commands for updating migration files
+- **Validation Tools**: Ensures migration file integrity and completeness
+- **Documentation**: Comprehensive guide for maintaining database migrations
+
+#### Migration Commands
+```bash
+# Manual migration update
+node scripts/generate-migration.js
+
+# Update with validation  
+./scripts/update-migration.sh
+
+# Watch for automatic updates (development)
+node scripts/watch-schema.js
+```
+
+This ensures the migration file automatically stays current with any future database changes, maintaining deployment readiness.
+
 ## Changelog
 - June 28, 2025: Initial setup
 - June 28, 2025: Added multi-company architecture with suppliers and purchase tracking
@@ -168,6 +191,8 @@ A comprehensive deployment guide (`DEPLOYMENT_GUIDE.md`) provides detailed instr
 - July 2, 2025: Implemented mobile-responsive design with collapsible sidebar and hamburger menu
 - July 2, 2025: Created comprehensive database migration SQL file and deployment documentation
 - July 2, 2025: Added complete setup guide for migrating application outside of Replit
+- July 3, 2025: Implemented automated migration file synchronization system
+- July 3, 2025: Added schema watching and automatic SQL generation for future database changes
 
 ## Authentication System
 

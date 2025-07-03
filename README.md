@@ -36,6 +36,17 @@ A comprehensive charcoal sales and billing management platform designed for ente
 5. Configure environment variables in `.env`
 6. Build and start: `npm run build && npm start`
 
+### Automated Migration System
+The application automatically keeps the SQL migration file synchronized with schema changes:
+
+```bash
+# Manual migration update after schema changes
+node scripts/generate-migration.js
+
+# Watch for automatic updates during development
+node scripts/watch-schema.js
+```
+
 📖 **For detailed deployment instructions, see [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md)**
 
 ## Project Structure

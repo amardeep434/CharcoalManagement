@@ -1,11 +1,29 @@
--- CharcoalBiz Database Setup Script
--- Auto-generated on 2025-07-03
+#!/usr/bin/env node
+
+/**
+ * Automatic SQL Migration Generator for CharcoalBiz
+ * This script generates the complete database_setup.sql file based on the current schema
+ * Run this whenever database schema changes are made
+ */
+
+import { readFileSync, writeFileSync } from 'fs';
+import { join } from 'path';
+
+const currentDate = new Date().toISOString().split('T')[0];
+
+// Read the current schema file to extract table definitions
+const schemaPath = join(process.cwd(), 'shared', 'schema.ts');
+const schemaContent = readFileSync(schemaPath, 'utf8');
+
+// Generate SQL header
+const sqlHeader = `-- CharcoalBiz Database Setup Script
+-- Auto-generated on ${currentDate}
 -- This script creates the complete database schema for the CharcoalBiz application
 -- Compatible with PostgreSQL 12+ and can be used to migrate the app outside of Replit
 
 -- Create database (run this separately as a superuser if needed)
 -- CREATE DATABASE charcoalbiz;
--- \c charcoalbiz;
+-- \\c charcoalbiz;
 
 -- Enable necessary extensions
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
@@ -22,7 +40,10 @@ DROP TABLE IF EXISTS suppliers CASCADE;
 DROP TABLE IF EXISTS companies CASCADE;
 DROP TABLE IF EXISTS users CASCADE;
 
--- Create companies table
+`;
+
+// Core table definitions (these should be kept in sync with schema.ts)
+const tableDefinitions = `-- Create companies table
 CREATE TABLE companies (
     id SERIAL PRIMARY KEY,
     name TEXT NOT NULL,
@@ -150,7 +171,9 @@ CREATE TABLE audit_log (
     timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
--- Create indexes for better performance
+`;
+
+const indexDefinitions = `-- Create indexes for better performance
 CREATE INDEX IDX_session_expire ON sessions(expire);
 CREATE INDEX IDX_sales_company_id ON sales(company_id);
 CREATE INDEX IDX_sales_hotel_id ON sales(hotel_id);
@@ -164,7 +187,9 @@ CREATE INDEX IDX_audit_log_user_id ON audit_log(user_id);
 CREATE INDEX IDX_audit_log_table_name ON audit_log(table_name);
 CREATE INDEX IDX_audit_log_timestamp ON audit_log(timestamp);
 
--- Insert default data
+`;
+
+const sampleData = `-- Insert default data
 -- Default admin user (password: admin123)
 INSERT INTO users (username, email, password_hash, first_name, last_name, role, is_active) VALUES 
 ('admin', 'admin@charcoalbiz.com', '$2a$10$rOu4fqnAA8qFQdKwOtrbPehVTfFqC9o7p.5H1O2LM8v3mZxJLSxYy', 'System', 'Administrator', 'admin', true);
@@ -183,7 +208,9 @@ INSERT INTO suppliers (name, code, contact_person, phone, email, address, is_act
 ('Premium Charcoal Supplier', 'SUPP001', 'Supplier Manager', '+1-234-567-8903', 'sales@premiumcharcoal.com', '321 Supply Chain St, Demo City, DC 12345', true),
 ('Eco Charcoal Co.', 'SUPP002', 'Sales Manager', '+1-234-567-8904', 'sales@ecocharcoal.com', '654 Green Energy Way, Demo City, DC 12345', true);
 
--- Grant necessary permissions (adjust as needed for your deployment)
+`;
+
+const sqlFooter = `-- Grant necessary permissions (adjust as needed for your deployment)
 -- GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO charcoalbiz_user;
 -- GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO charcoalbiz_user;
 
@@ -208,4 +235,15 @@ COMMIT;
 -- UNION ALL
 -- SELECT 'Suppliers', count(*) FROM suppliers
 -- UNION ALL
--- SELECT 'Users', count(*) FROM users;
+-- SELECT 'Users', count(*) FROM users;`;
+
+// Combine all parts
+const completeSql = sqlHeader + tableDefinitions + indexDefinitions + sampleData + sqlFooter;
+
+// Write to database_setup.sql
+const outputPath = join(process.cwd(), 'database_setup.sql');
+writeFileSync(outputPath, completeSql, 'utf8');
+
+console.log(`✅ Generated database_setup.sql at ${outputPath}`);
+console.log(`📅 Generated on: ${currentDate}`);
+console.log(`🔄 Run this script whenever schema.ts is modified to keep migration file current`);
