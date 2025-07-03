@@ -124,6 +124,31 @@ CharcoalBiz is a full-stack sales management application designed for charcoal b
 
 The application is designed with a clear separation of concerns, type safety throughout the stack, and a focus on developer experience while maintaining production readiness.
 
+## Migration and Deployment
+
+### Database Migration
+The application includes a complete SQL migration file (`database_setup.sql`) that can recreate the entire database schema on any PostgreSQL server. This file includes:
+- Complete table structure with proper constraints and indexes
+- Default admin user and sample data
+- Optimized indexes for performance
+- Session storage for authentication
+
+### Deployment Outside Replit
+A comprehensive deployment guide (`DEPLOYMENT_GUIDE.md`) provides detailed instructions for:
+- **Prerequisites**: Node.js 20+, PostgreSQL 12+, Git
+- **Environment Setup**: Database configuration, environment variables
+- **Deployment Options**: Direct server, Docker, cloud platforms (Heroku, DigitalOcean, Vercel)
+- **Security**: SSL/HTTPS, database security, firewall configuration
+- **Monitoring**: Logging, backup strategies, maintenance procedures
+
+### Production Readiness Features
+- Session-based authentication with PostgreSQL storage
+- Role-based access control with audit logging
+- Mobile-responsive design with collapsible navigation
+- Complete API with proper error handling
+- Excel import/export functionality
+- Multi-company architecture support
+
 ## Changelog
 - June 28, 2025: Initial setup
 - June 28, 2025: Added multi-company architecture with suppliers and purchase tracking
@@ -141,6 +166,8 @@ The application is designed with a clear separation of concerns, type safety thr
 - July 2, 2025: Fixed logout functionality to properly clear sessions and redirect users
 - July 2, 2025: Fixed CORS configuration for proper session cookie handling with credentials
 - July 2, 2025: Implemented mobile-responsive design with collapsible sidebar and hamburger menu
+- July 2, 2025: Created comprehensive database migration SQL file and deployment documentation
+- July 2, 2025: Added complete setup guide for migrating application outside of Replit
 
 ## Authentication System
 
