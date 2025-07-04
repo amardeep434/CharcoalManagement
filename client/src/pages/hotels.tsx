@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Plus, Search, Building, Mail, Phone } from "lucide-react";
 import { format } from "date-fns";
+import { NewHotelModal } from "@/components/modals/new-hotel-modal";
 import type { HotelWithStats } from "@shared/schema";
 
 export default function Hotels() {
@@ -29,12 +30,7 @@ export default function Hotels() {
       <Header
         title="Hotel Management"
         description="Manage hotel information and view performance stats"
-        actions={
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            Add Hotel
-          </Button>
-        }
+        actions={<NewHotelModal />}
       />
 
       <div className="p-6">
