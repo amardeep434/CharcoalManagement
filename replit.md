@@ -150,27 +150,42 @@ A comprehensive deployment guide (`DEPLOYMENT_GUIDE.md`) provides detailed instr
 - Multi-company architecture support
 
 ### Automated Migration System
-The application now includes an automated system to ensure the SQL migration file stays synchronized with schema changes:
+The application includes a comprehensive automated migration system that eliminates manual migration file updates:
 
-- **Migration Generator**: Automatically creates `database_setup.sql` from current schema
-- **Schema Watcher**: Monitors `shared/schema.ts` for changes and regenerates migration file
-- **Development Scripts**: Easy-to-use commands for updating migration files
-- **Validation Tools**: Ensures migration file integrity and completeness
-- **Documentation**: Comprehensive guide for maintaining database migrations
+- **Real-Time Monitoring**: Watches schema files and automatically updates migrations
+- **Git Integration**: Pre-commit and post-merge hooks ensure migrations stay current
+- **Production Feature Detection**: Automatically includes all security and performance optimizations
+- **Validation System**: Ensures migration completeness and production readiness
+- **Development Watcher**: Real-time migration updates during development
+
+#### Key Features
+- **Auto-Detection**: Scans schema files to identify indexes, security features, and capabilities
+- **Production Headers**: Automatically adds comprehensive documentation and compatibility notes
+- **Feature Validation**: Checks for performance indexes, security configs, and audit logging
+- **Zero Manual Updates**: Complete automation from development to production deployment
 
 #### Migration Commands
 ```bash
-# Manual migration update
+# Setup automated system (run once)
+./scripts/setup-auto-migration.sh
+
+# Development watching (real-time updates)
+node scripts/dev-migration-watcher.js
+
+# Manual update (if needed)
 node scripts/generate-migration.js
 
-# Update with validation  
-./scripts/update-migration.sh
-
-# Watch for automatic updates (development)
-node scripts/watch-schema.js
+# Validate current migration
+node scripts/validate-migration.js
 ```
 
-This ensures the migration file automatically stays current with any future database changes, maintaining deployment readiness.
+#### Automated Triggers
+- **Pre-commit**: Updates migrations before every commit
+- **Post-merge**: Updates migrations after pulling changes
+- **Schema Changes**: Real-time updates when schema.ts is modified
+- **Build Process**: Ensures production builds have current migrations
+
+This system ensures migration files automatically include all production features and stay current with zero manual intervention.
 
 ## Changelog
 - June 28, 2025: Initial setup

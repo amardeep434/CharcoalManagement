@@ -45,3 +45,7 @@ fi
 
 echo ""
 echo "✨ Migration update complete!"
+# Run validation after update
+echo ""
+echo "🔍 Validating migration file..."
+node scripts/validate-migration.js
