@@ -9,10 +9,12 @@ import { useDashboardStats } from "@/hooks/use-dashboard-stats";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { useState } from "react";
+import { useLocation } from "wouter";
 import type { SaleWithHotel } from "@shared/schema";
 
 export default function Dashboard() {
   const [showNewSaleModal, setShowNewSaleModal] = useState(false);
+  const [, navigate] = useLocation();
   const { data: stats, isLoading: statsLoading } = useDashboardStats();
   
   const { data: recentSales, isLoading: salesLoading } = useQuery<SaleWithHotel[]>({
@@ -179,7 +181,7 @@ export default function Dashboard() {
                           <TableCell className="text-sm text-gray-900">
                             {format(new Date(sale.date), "MMM dd, yyyy")}
                           </TableCell>
-                          <TableCell className="text-sm text-gray-900">{sale.quantity} tons</TableCell>
+                          <TableCell className="text-sm text-gray-900">{sale.quantity} kg</TableCell>
                           <TableCell className="text-sm font-medium text-gray-900">
                             {formatCurrency(Number(sale.totalAmount))}
                           </TableCell>
@@ -217,14 +219,22 @@ export default function Dashboard() {
                     </div>
                     <ExternalLink className="h-4 w-4 text-gray-400" />
                   </Button>
-                  <Button variant="outline" className="w-full justify-between">
+                  <Button 
+                    variant="outline" 
+                    className="w-full justify-between"
+                    onClick={() => navigate("/import")}
+                  >
                     <div className="flex items-center">
                       <Flame className="text-primary mr-3 h-4 w-4" />
                       <span className="text-sm font-medium text-gray-900">Import Excel Data</span>
                     </div>
                     <ExternalLink className="h-4 w-4 text-gray-400" />
                   </Button>
-                  <Button variant="outline" className="w-full justify-between">
+                  <Button 
+                    variant="outline" 
+                    className="w-full justify-between"
+                    onClick={() => navigate("/statements")}
+                  >
                     <div className="flex items-center">
                       <ChartLine className="text-primary mr-3 h-4 w-4" />
                       <span className="text-sm font-medium text-gray-900">Generate Statement</span>

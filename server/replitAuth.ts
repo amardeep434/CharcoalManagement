@@ -16,14 +16,15 @@ export function getSession() {
     tableName: "sessions",
   });
   return session({
-    secret: process.env.SESSION_SECRET || 'your-secret-key',
+    secret: process.env.SESSION_SECRET || 'charcoal-biz-session-secret-key-' + Math.random().toString(36),
     store: sessionStore,
     resave: false,
     saveUninitialized: false,
     cookie: {
       httpOnly: true,
-      secure: false, // Set to true in production with HTTPS
+      secure: process.env.NODE_ENV === 'production',
       maxAge: sessionTtl,
+      sameSite: 'strict',
     },
   });
 }
