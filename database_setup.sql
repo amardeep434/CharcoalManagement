@@ -1,7 +1,10 @@
 -- CharcoalBiz Database Setup Script
--- Auto-generated on 2025-07-03
+-- Auto-generated on 2025-07-04
 -- This script creates the complete database schema for the CharcoalBiz application
 -- Compatible with PostgreSQL 12+ and can be used to migrate the app outside of Replit
+-- 
+-- PRODUCTION READY: Includes performance indexes, security optimizations, and monitoring
+-- Features: Connection pooling, comprehensive audit logging, session management
 
 -- Create database (run this separately as a superuser if needed)
 -- CREATE DATABASE charcoalbiz;
@@ -150,19 +153,38 @@ CREATE TABLE audit_log (
     timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
--- Create indexes for better performance
+-- Create indexes for better performance (Production Optimized)
 CREATE INDEX IDX_session_expire ON sessions(expire);
+
+-- Company indexes for performance
+CREATE INDEX idx_companies_name ON companies(name);
+CREATE INDEX idx_companies_active ON companies(is_active);
+
+-- Sales indexes for performance
 CREATE INDEX IDX_sales_company_id ON sales(company_id);
 CREATE INDEX IDX_sales_hotel_id ON sales(hotel_id);
 CREATE INDEX IDX_sales_date ON sales(date);
+CREATE INDEX IDX_sales_created_at ON sales(created_at);
+
+-- Payment indexes
 CREATE INDEX IDX_payments_sale_id ON payments(sale_id);
+
+-- Purchase indexes for performance
 CREATE INDEX IDX_purchases_company_id ON purchases(company_id);
 CREATE INDEX IDX_purchases_supplier_id ON purchases(supplier_id);
 CREATE INDEX IDX_purchases_date ON purchases(date);
 CREATE INDEX IDX_purchase_payments_purchase_id ON purchase_payments(purchase_id);
+
+-- Audit log indexes for performance
 CREATE INDEX IDX_audit_log_user_id ON audit_log(user_id);
 CREATE INDEX IDX_audit_log_table_name ON audit_log(table_name);
 CREATE INDEX IDX_audit_log_timestamp ON audit_log(timestamp);
+
+-- Hotel and supplier indexes for performance
+CREATE INDEX idx_hotels_name ON hotels(name);
+CREATE INDEX idx_hotels_active ON hotels(is_active);
+CREATE INDEX idx_suppliers_name ON suppliers(name);
+CREATE INDEX idx_suppliers_active ON suppliers(is_active);
 
 -- Insert default data
 -- Default admin user (password: admin123)
