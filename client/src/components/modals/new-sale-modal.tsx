@@ -41,7 +41,7 @@ export function NewSaleModal({ open, onOpenChange }: NewSaleModalProps) {
     defaultValues: {
       date: new Date().toISOString().split('T')[0],
       quantity: 0,
-      ratePerKg: "4",
+      ratePerKg: 4,
       totalAmount: 0,
       notes: ""
     },
@@ -75,7 +75,7 @@ export function NewSaleModal({ open, onOpenChange }: NewSaleModalProps) {
   const ratePerKg = form.watch("ratePerKg");
 
   // Auto-calculate total amount
-  const totalAmount = quantity * parseFloat(ratePerKg || "0");
+  const totalAmount = quantity * (typeof ratePerKg === 'number' ? ratePerKg : parseFloat(ratePerKg?.toString() || "0"));
   form.setValue("totalAmount", totalAmount);
 
   const onSubmit = (data: NewSaleForm) => {

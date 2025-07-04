@@ -1,22 +1,27 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
 
-// Simple auth token storage
+// Secure auth token storage using httpOnly cookies
+// Note: Tokens are now stored server-side in sessions for security
 let authToken: string | null = null;
 
 export function setAuthToken(token: string | null) {
   authToken = token;
-  if (token) {
-    localStorage.setItem('authToken', token);
-  } else {
+  // Remove localStorage usage for security - tokens are now in httpOnly cookies
+  if (!token) {
+    // Clear any legacy localStorage tokens
     localStorage.removeItem('authToken');
   }
 }
 
 export function getAuthToken(): string | null {
-  if (!authToken) {
-    authToken = localStorage.getItem('authToken');
+  // First check if we have token in memory from login response
+  if (authToken) {
+    return authToken;
   }
-  return authToken;
+  
+  // Remove insecure localStorage fallback
+  // Tokens are now managed via secure httpOnly cookies
+  return null;
 }
 
 export function getAuthHeaders(): Record<string, string> {

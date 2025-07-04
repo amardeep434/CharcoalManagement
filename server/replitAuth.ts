@@ -6,6 +6,22 @@ import connectPg from "connect-pg-simple";
 import bcrypt from "bcryptjs";
 import { dbStorage as storage } from "./storage-db";
 
+// Secure session secret generation
+function generateSessionSecret(): string {
+  if (process.env.SESSION_SECRET) {
+    return process.env.SESSION_SECRET;
+  }
+  
+  // In production, this should be set via environment variable
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('SESSION_SECRET environment variable must be set in production');
+  }
+  
+  // Development fallback with warning
+  console.warn('WARNING: Using generated session secret. Set SESSION_SECRET environment variable for production.');
+  return 'dev-' + Math.random().toString(36).substring(2) + Date.now().toString(36);
+}
+
 export function getSession() {
   const sessionTtl = 7 * 24 * 60 * 60 * 1000; // 1 week
   const pgStore = connectPg(session);
@@ -16,7 +32,7 @@ export function getSession() {
     tableName: "sessions",
   });
   return session({
-    secret: process.env.SESSION_SECRET || 'charcoal-biz-session-secret-key-' + Math.random().toString(36),
+    secret: generateSessionSecret(),
     store: sessionStore,
     resave: false,
     saveUninitialized: false,
@@ -24,7 +40,7 @@ export function getSession() {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       maxAge: sessionTtl,
-      sameSite: 'strict',
+      sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
     },
   });
 }

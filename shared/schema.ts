@@ -14,6 +14,11 @@ export const companies = pgTable("companies", {
   taxId: text("tax_id"),
   isActive: boolean("is_active").notNull().default(true),
   createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
+}, (table) => {
+  return {
+    nameIdx: index("idx_companies_name").on(table.name),
+    activeIdx: index("idx_companies_active").on(table.isActive),
+  };
 });
 
 // Suppliers (Charcoal suppliers you purchase from)
@@ -51,7 +56,15 @@ export const sales = pgTable("sales", {
   totalAmount: decimal("total_amount", { precision: 12, scale: 2 }).notNull(),
   notes: text("notes"),
   createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
-});
+}, (table) => ({
+  // Performance indexes for common queries
+  companyIdIdx: index("sales_company_id_idx").on(table.companyId),
+  hotelIdIdx: index("sales_hotel_id_idx").on(table.hotelId),
+  dateIdx: index("sales_date_idx").on(table.date),
+  createdAtIdx: index("sales_created_at_idx").on(table.createdAt),
+  // Composite index for dashboard recent sales
+  companyDateIdx: index("sales_company_date_idx").on(table.companyId, table.date),
+}));
 
 export const payments = pgTable("payments", {
   id: serial("id").primaryKey(),
@@ -61,7 +74,10 @@ export const payments = pgTable("payments", {
   paymentMethod: text("payment_method"),
   notes: text("notes"),
   createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
-});
+}, (table) => ({
+  saleIdIdx: index("payments_sale_id_idx").on(table.saleId),
+  paymentDateIdx: index("payments_payment_date_idx").on(table.paymentDate),
+}));
 
 // Purchases (Charcoal purchases from suppliers)
 export const purchases = pgTable("purchases", {
