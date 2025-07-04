@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -87,6 +87,9 @@ export function NewSaleModal({ open, onOpenChange }: NewSaleModalProps) {
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle>Record New Sale</DialogTitle>
+          <DialogDescription>
+            Add a new charcoal sale transaction to track inventory and payments
+          </DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
