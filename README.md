@@ -17,9 +17,6 @@ A comprehensive charcoal sales and billing management platform designed for ente
 
 1. The application is pre-configured and ready to run
 2. Click "Run" to start the development server
-3. Default login credentials:
-   - Username: `admin`
-   - Password: `admin123`
 
 ## Migration Outside Replit
 
