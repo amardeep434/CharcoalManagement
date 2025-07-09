@@ -276,3 +276,4 @@ All measurement units have been updated to use kilograms:
 
 Preferred communication style: Simple, everyday language.
 Preferred measurement units: Kilograms (kg) for all charcoal quantities.
+Database policy: Never switch to in-memory session store when database has issues - always fix the actual database connection problem.

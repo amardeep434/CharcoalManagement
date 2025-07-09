@@ -10,7 +10,7 @@ import { isAuthenticated, requireRole, requirePermission, auditLog } from "./rep
 import multer from "multer";
 import bcrypt from "bcryptjs";
 import session from "express-session";
-import MemoryStore from "memorystore";
+import connectPgSimple from "connect-pg-simple";
 import { z } from "zod";
 import { pool } from "./db";
 
@@ -20,20 +20,26 @@ interface MulterRequest extends Request {
 }
 
 const upload = multer({ storage: multer.memoryStorage() });
-const MemoryStoreSession = MemoryStore(session);
+const PgSession = connectPgSimple(session);
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Use memory session store for reliability
-  const sessionStore = new MemoryStoreSession({
-    checkPeriod: 86400000, // prune expired entries every 24h
+  // PostgreSQL session store with improved error handling
+  const sessionStore = new PgSession({
+    pool: pool,
+    tableName: 'session',
+    createTableIfMissing: true,
+    errorLog: (error) => {
+      console.error('Session store error:', error.message);
+      // Don't crash on session store errors
+    }
   });
 
-  // Session-based authentication setup with memory store
+  // Session-based authentication setup with PostgreSQL store
   app.use(session({
     store: sessionStore,
     secret: process.env.SESSION_SECRET || 'charcoal-biz-secret-key',
     resave: false,
-    saveUninitialized: false, // Don't create session until needed
+    saveUninitialized: true, // Create session for all requests
     rolling: true, // Reset expiry on activity
     cookie: { 
       secure: false, // Set to true in production with HTTPS
