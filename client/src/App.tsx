@@ -8,8 +8,10 @@ import { useAuth } from "@/hooks/useAuth";
 import { LoginForm } from "@/components/auth/login-form";
 import Dashboard from "@/pages/dashboard";
 import Sales from "@/pages/sales";
+import Purchases from "@/pages/purchases";
 import Payments from "@/pages/payments";
 import Hotels from "@/pages/hotels";
+import Suppliers from "@/pages/suppliers";
 import Statements from "@/pages/statements";
 import Import from "@/pages/import";
 import Users from "@/pages/users";
@@ -41,8 +43,10 @@ function Router() {
         <Switch>
           <Route path="/" component={Dashboard} />
           <Route path="/sales" component={Sales} />
+          <Route path="/purchases" component={Purchases} />
           <Route path="/payments" component={Payments} />
           <Route path="/hotels" component={Hotels} />
+          <Route path="/suppliers" component={Suppliers} />
           <Route path="/statements" component={Statements} />
           <Route path="/import" component={Import} />
           <Route path="/users" component={Users} />

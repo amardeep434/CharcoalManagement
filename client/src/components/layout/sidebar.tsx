@@ -1,6 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Flame, ChartLine, ShoppingCart, CreditCard, Building, FileText, Upload, LogOut, Users as UsersIcon, Activity, Menu, X } from "lucide-react";
+import { Flame, ChartLine, ShoppingCart, CreditCard, Building, FileText, Upload, LogOut, Users as UsersIcon, Activity, Menu, X, Package, Truck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -11,8 +11,10 @@ import { useState, useEffect } from "react";
 const navItems = [
   { path: "/", label: "Dashboard", icon: ChartLine },
   { path: "/sales", label: "Sales Records", icon: ShoppingCart },
+  { path: "/purchases", label: "Purchase Records", icon: Package },
   { path: "/payments", label: "Payments", icon: CreditCard },
   { path: "/hotels", label: "Hotel Management", icon: Building },
+  { path: "/suppliers", label: "Supplier Management", icon: Truck },
   { path: "/statements", label: "Statements", icon: FileText },
   { path: "/import", label: "Import Data", icon: Upload },
   { path: "/users", label: "User Management", icon: UsersIcon, adminOnly: true },
