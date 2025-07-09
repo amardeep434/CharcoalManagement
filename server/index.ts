@@ -111,8 +111,15 @@ app.get('/health', async (req, res) => {
 });
 
 (async () => {
-  // Initialize database with default data
-  await seedDatabase();
+  // Set NODE_ENV if not already set
+  if (!process.env.NODE_ENV) {
+    process.env.NODE_ENV = 'development';
+  }
+  
+  // Initialize database with default data (non-blocking)
+  seedDatabase().catch(err => {
+    console.error("Database seeding failed, continuing without seeding:", err.message);
+  });
   
   const server = await registerRoutes(app);
 
