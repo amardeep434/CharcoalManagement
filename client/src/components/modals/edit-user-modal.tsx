@@ -58,9 +58,9 @@ export function EditUserModal({ user, isOpen, onClose }: EditUserModalProps) {
     resolver: zodResolver(editUserSchema),
     defaultValues: {
       username: user.username,
-      email: user.email,
-      firstName: user.firstName,
-      lastName: user.lastName,
+      email: user.email || undefined,
+      firstName: user.firstName || undefined,
+      lastName: user.lastName || undefined,
       role: user.role,
       isActive: user.isActive,
       password: "",
@@ -73,7 +73,7 @@ export function EditUserModal({ user, isOpen, onClose }: EditUserModalProps) {
       if (!payload.password) {
         delete payload.password;
       }
-      return apiRequest(`/api/users/${user.id}`, "PATCH", payload);
+      return apiRequest("PATCH", `/api/users/${user.id}`, payload);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/users"] });
