@@ -307,6 +307,52 @@ export const purchaseImportSchema = z.object({
 export type ExcelImportRow = z.infer<typeof excelImportSchema>;
 export type PurchaseImportRow = z.infer<typeof purchaseImportSchema>;
 
+// Enhanced import analysis schemas
+export const importAnalysisSchema = z.object({
+  fileName: z.string(),
+  fileSize: z.number(),
+  sheets: z.array(z.object({
+    name: z.string(),
+    rowCount: z.number(),
+    columnCount: z.number(),
+    columns: z.array(z.string()),
+    sampleRows: z.array(z.record(z.any())),
+    detectedPattern: z.enum(['sales', 'purchases', 'companies', 'suppliers', 'hotels', 'payments', 'unknown']),
+    confidence: z.number().min(0).max(1),
+    mapping: z.record(z.string().optional()),
+  })),
+  overallPattern: z.enum(['sales', 'purchases', 'mixed', 'companies', 'suppliers', 'hotels', 'payments', 'unknown']),
+  confidence: z.number().min(0).max(1),
+  warnings: z.array(z.string()),
+});
+
+export const importPreviewSchema = z.object({
+  analysis: importAnalysisSchema,
+  mappedData: z.array(z.object({
+    sheetName: z.string(),
+    targetTable: z.string(),
+    recordCount: z.number(),
+    validRecords: z.number(),
+    invalidRecords: z.number(),
+    sampleMappedRecords: z.array(z.record(z.any())),
+    validationErrors: z.array(z.object({
+      row: z.number(),
+      errors: z.array(z.string()),
+    })),
+  })),
+  estimatedChanges: z.object({
+    newCompanies: z.number(),
+    newSuppliers: z.number(),
+    newHotels: z.number(),
+    newSales: z.number(),
+    newPurchases: z.number(),
+    newPayments: z.number(),
+  }),
+});
+
+export type ImportAnalysis = z.infer<typeof importAnalysisSchema>;
+export type ImportPreview = z.infer<typeof importPreviewSchema>;
+
 // User and authentication types
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,

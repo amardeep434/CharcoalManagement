@@ -688,6 +688,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Import analyze route
+  app.post("/api/import/analyze", upload.single("file"), async (req: MulterRequest, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "No file uploaded" });
+      }
+
+      const { analyzeImportFile, generateImportPreview } = await import("./import-analyzer");
+      
+      // Analyze the file
+      const analysis = await analyzeImportFile(req.file.buffer, req.file.originalname);
+      
+      // Generate preview
+      const preview = await generateImportPreview(analysis, req.file.buffer);
+      
+      res.json(preview);
+    } catch (error) {
+      console.error("Import analysis error:", error);
+      res.status(500).json({ message: "Failed to analyze import file" });
+    }
+  });
+
   // Excel import route
   app.post("/api/import/excel", upload.single("file"), async (req: MulterRequest, res) => {
     try {
