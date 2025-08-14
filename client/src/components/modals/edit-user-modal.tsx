@@ -182,10 +182,30 @@ export function EditUserModal({ user, isOpen, onClose }: EditUserModalProps) {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="admin">Admin</SelectItem>
-                      <SelectItem value="manager">Manager</SelectItem>
-                      <SelectItem value="operator">Operator</SelectItem>
-                      <SelectItem value="viewer">Viewer</SelectItem>
+                      <SelectItem value="admin">
+                        <div className="flex flex-col">
+                          <span className="font-medium">Admin</span>
+                          <span className="text-xs text-gray-500">Full access - Can manage users, companies, and all data</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="manager">
+                        <div className="flex flex-col">
+                          <span className="font-medium">Manager</span>
+                          <span className="text-xs text-gray-500">Can create/edit sales, payments, hotels, and suppliers</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="operator">
+                        <div className="flex flex-col">
+                          <span className="font-medium">Operator</span>
+                          <span className="text-xs text-gray-500">Can create sales and payments, view reports</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="viewer">
+                        <div className="flex flex-col">
+                          <span className="font-medium">Viewer</span>
+                          <span className="text-xs text-gray-500">Read-only access - Can view data but not make changes</span>
+                        </div>
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
