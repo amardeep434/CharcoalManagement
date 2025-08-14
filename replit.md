@@ -8,7 +8,7 @@ CharcoalBiz is a full-stack sales management application designed for charcoal b
 
 Preferred communication style: Simple, everyday language.
 Preferred measurement units: Kilograms (kg) for all charcoal quantities.
-Critical development rule: If the database is not working or the app is not working, never switch to in-memory storage, local storage, or any temporary storage solutions just to get the app working - always fix the actual database connection problem unless explicitly asked to use alternative storage.
+Database policy: Never switch to in-memory storage, local storage, or any temporary storage solutions when database or app is not working - always fix the actual database connection problem unless explicitly asked to use alternative storage.
 
 ## System Architecture
 
