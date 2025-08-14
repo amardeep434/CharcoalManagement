@@ -12,6 +12,7 @@ import type { AuditLog } from "@shared/schema";
 export default function AuditLogsPage() {
   const [tableFilter, setTableFilter] = useState<string>("all");
   const [actionFilter, setActionFilter] = useState<string>("all");
+  const [searchQuery, setSearchQuery] = useState<string>("");
   const [limit, setLimit] = useState<number>(50);
 
   const { data: auditLogs, isLoading } = useQuery<AuditLog[]>({
@@ -41,9 +42,25 @@ export default function AuditLogsPage() {
     }
   };
 
-  const filteredLogs = auditLogs?.filter(log => 
-    actionFilter === "all" || log.action === actionFilter
-  ) || [];
+  const filteredLogs = auditLogs?.filter(log => {
+    // Filter by action
+    const actionMatch = actionFilter === "all" || log.action === actionFilter;
+    
+    // Filter by search query
+    const searchMatch = searchQuery === "" || 
+      (log as any).username?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (log as any).firstName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (log as any).lastName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      log.tableName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      log.action?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      log.recordId?.toString().includes(searchQuery) ||
+      log.userId?.toString().includes(searchQuery) ||
+      log.ipAddress?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      JSON.stringify(log.oldValues)?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      JSON.stringify(log.newValues)?.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    return actionMatch && searchMatch;
+  }) || [];
 
   if (isLoading) {
     return (
@@ -78,9 +95,25 @@ export default function AuditLogsPage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="space-y-4">
+            {/* Search Bar */}
             <div>
-              <label className="text-sm font-medium text-gray-700 mb-2 block">Table</label>
+              <label className="text-sm font-medium text-gray-700 mb-2 block">Search</label>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <Input
+                  placeholder="Search by user, table, action, record ID, or values..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-9"
+                />
+              </div>
+            </div>
+            
+            {/* Filter Controls */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">Table</label>
               <Select value={tableFilter} onValueChange={setTableFilter}>
                 <SelectTrigger>
                   <SelectValue placeholder="All tables" />
@@ -135,6 +168,7 @@ export default function AuditLogsPage() {
                 onClick={() => {
                   setTableFilter("all");
                   setActionFilter("all");
+                  setSearchQuery("");
                   setLimit(50);
                 }}
                 className="w-full"
@@ -142,6 +176,7 @@ export default function AuditLogsPage() {
                 Clear Filters
               </Button>
             </div>
+          </div>
           </div>
         </CardContent>
       </Card>
@@ -170,7 +205,7 @@ export default function AuditLogsPage() {
                     
                     <div className="text-sm text-gray-600 space-y-1">
                       <p>
-                        <span className="font-medium">User:</span> {log.username ? `${log.firstName || ''} ${log.lastName || ''} (${log.username})`.trim() : log.userId}
+                        <span className="font-medium">User:</span> {(log as any).username ? `${(log as any).firstName || ''} ${(log as any).lastName || ''} (${(log as any).username})`.trim() : log.userId}
                       </p>
                       <p>
                         <span className="font-medium">Time:</span> {new Date(log.timestamp).toLocaleString()}
@@ -188,7 +223,7 @@ export default function AuditLogsPage() {
                           <div>
                             <p className="text-xs font-medium text-gray-500 mb-1">OLD VALUES</p>
                             <pre className="text-xs bg-red-50 border border-red-200 rounded p-2 overflow-x-auto">
-                              {JSON.stringify(log.oldValues, null, 2)}
+                              {typeof log.oldValues === 'string' ? log.oldValues : JSON.stringify(log.oldValues, null, 2)}
                             </pre>
                           </div>
                         )}
@@ -196,7 +231,7 @@ export default function AuditLogsPage() {
                           <div>
                             <p className="text-xs font-medium text-gray-500 mb-1">NEW VALUES</p>
                             <pre className="text-xs bg-green-50 border border-green-200 rounded p-2 overflow-x-auto">
-                              {JSON.stringify(log.newValues, null, 2)}
+                              {typeof log.newValues === 'string' ? log.newValues : JSON.stringify(log.newValues, null, 2)}
                             </pre>
                           </div>
                         )}
