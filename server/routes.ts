@@ -688,8 +688,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Import analyze route
-  app.post("/api/import/analyze", upload.single("file"), async (req: MulterRequest, res) => {
+  // Import analyze route - Admin only
+  app.post("/api/import/analyze", requireAuth, requireRole('admin'), upload.single("file"), async (req: MulterRequest, res) => {
     try {
       if (!req.file) {
         return res.status(400).json({ message: "No file uploaded" });
@@ -697,6 +697,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const { analyzeImportFile, generateImportPreview } = await import("./import-analyzer");
       
+      // Log import analysis activity
+      await storage.createAuditLog({
+        userId: ((req.session as any).userId).toString(),
+        action: 'ANALYZE',
+        tableName: 'import',
+        recordId: 0,
+        newValues: { fileName: req.file.originalname, fileSize: req.file.size },
+        oldValues: null,
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent'),
+      });
+
       // Analyze the file
       const analysis = await analyzeImportFile(req.file.buffer, req.file.originalname);
       
@@ -710,8 +722,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Excel import route
-  app.post("/api/import/excel", upload.single("file"), async (req: MulterRequest, res) => {
+  // Excel import route - Admin only
+  app.post("/api/import/excel", requireAuth, requireRole('admin'), upload.single("file"), async (req: MulterRequest, res) => {
     try {
       if (!req.file) {
         return res.status(400).json({ message: "No file uploaded" });
@@ -814,6 +826,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
 
           importResults.success++;
+
+          // Log successful import of each record
+          await storage.createAuditLog({
+            userId: ((req.session as any).userId).toString(),
+            action: 'IMPORT',
+            tableName: 'sales',
+            recordId: sale.id,
+            newValues: { hotelName: validatedRow.hotelName, quantity: validatedRow.quantity, totalAmount: validatedRow.totalAmount },
+            oldValues: null,
+            ipAddress: req.ip,
+            userAgent: req.get('User-Agent'),
+          });
         } catch (error) {
           importResults.errors.push({
             row: i + 1,

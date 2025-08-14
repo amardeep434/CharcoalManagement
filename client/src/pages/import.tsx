@@ -10,8 +10,9 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { getAuthHeaders } from "@/lib/queryClient";
-import { Upload, FileSpreadsheet, CheckCircle, XCircle, AlertCircle, Eye, Database, FileText, Users, Building } from "lucide-react";
+import { Upload, FileSpreadsheet, CheckCircle, XCircle, AlertCircle, Eye, Database, FileText, Users, Building, Shield } from "lucide-react";
 import type { ImportPreview } from "@shared/schema";
+import { useAuth } from "@/hooks/useAuth";
 
 interface ImportResult {
   success: number;
@@ -29,6 +30,38 @@ export default function Import() {
   const [step, setStep] = useState<'upload' | 'analyze' | 'preview' | 'confirm' | 'result'>('upload');
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { user } = useAuth();
+
+  // Check if user is admin
+  const isAdmin = user?.role === 'admin';
+
+  // If not admin, show access denied
+  if (!isAdmin) {
+    return (
+      <>
+        <Header
+          title="Import Data"
+          description="Import sales and payment data from Excel files"
+        />
+        <div className="p-6 max-w-4xl">
+          <Card>
+            <CardContent className="p-8 text-center">
+              <div className="mx-auto w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
+                <Shield className="text-red-600 h-8 w-8" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Admin Access Required</h3>
+              <p className="text-gray-600 mb-4">
+                Data import functionality is restricted to administrators only. This ensures data integrity and prevents unauthorized modifications to the system.
+              </p>
+              <p className="text-sm text-gray-500">
+                Contact your system administrator if you need access to import data.
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      </>
+    );
+  }
 
   const analyzeFileMutation = useMutation({
     mutationFn: async (file: File) => {

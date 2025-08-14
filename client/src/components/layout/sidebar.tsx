@@ -17,7 +17,7 @@ const navItems = [
   { path: "/suppliers", label: "Supplier Management", icon: Truck },
   { path: "/companies", label: "Company Management", icon: Building },
   { path: "/statements", label: "Statements", icon: FileText },
-  { path: "/import", label: "Import Data", icon: Upload },
+  { path: "/import", label: "Import Data", icon: Upload, adminOnly: true },
   { path: "/users", label: "User Management", icon: UsersIcon, adminOnly: true },
   { path: "/audit-logs", label: "Audit Logs", icon: Activity, adminOnly: true },
 ];
