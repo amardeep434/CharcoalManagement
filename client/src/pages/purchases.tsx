@@ -16,6 +16,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { Plus, Edit2, Trash2, Calendar, Package, DollarSign, FileText } from "lucide-react";
 import { format } from "date-fns";
 import { insertPurchaseSchema, type InsertPurchase, type PurchaseWithSupplier, type Company, type Supplier } from "@shared/schema";
+import { Header } from "@/components/layout/header";
 
 const purchaseFormSchema = insertPurchaseSchema.extend({
   date: insertPurchaseSchema.shape.date.transform((val) => val instanceof Date ? format(val, 'yyyy-MM-dd') : val),
@@ -364,26 +365,39 @@ export default function Purchases() {
 
   if (isLoading) {
     return (
-      <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold text-gray-900">Purchase Records</h1>
+      <>
+        <Header
+          title="Purchase Records"
+          description="Track charcoal purchases from suppliers and manage invoices"
+          actions={
+            <Button onClick={openCreateModal}>
+              <Plus className="w-4 h-4 mr-2" />
+              Add Purchase
+            </Button>
+          }
+        />
+        <div className="p-6">
+          <div className="text-center py-8">Loading purchases...</div>
         </div>
-        <div className="text-center py-8">Loading purchases...</div>
-      </div>
+      </>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold text-gray-900">Purchase Records</h1>
-        <Button onClick={openCreateModal}>
-          <Plus className="w-4 h-4 mr-2" />
-          Add Purchase
-        </Button>
-      </div>
-
-      <Card>
+    <>
+      <Header
+        title="Purchase Records"
+        description="Track charcoal purchases from suppliers and manage invoices"
+        actions={
+          <Button onClick={openCreateModal}>
+            <Plus className="w-4 h-4 mr-2" />
+            Add Purchase
+          </Button>
+        }
+      />
+      
+      <div className="p-6">
+        <Card>
         <CardHeader>
           <div className="flex justify-between items-center">
             <CardTitle>Purchase History</CardTitle>
@@ -491,16 +505,17 @@ export default function Purchases() {
         </CardContent>
       </Card>
 
-      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        {isModalOpen && (
-          <PurchaseModal
-            purchase={editingPurchase}
-            companies={companies}
-            suppliers={suppliers}
-            onClose={() => setIsModalOpen(false)}
-          />
-        )}
-      </Dialog>
-    </div>
+        <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+          {isModalOpen && (
+            <PurchaseModal
+              purchase={editingPurchase}
+              companies={companies}
+              suppliers={suppliers}
+              onClose={() => setIsModalOpen(false)}
+            />
+          )}
+        </Dialog>
+      </div>
+    </>
   );
 }
