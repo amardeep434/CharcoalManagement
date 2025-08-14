@@ -1,7 +1,7 @@
 # CharcoalBiz - Sales Management System
 
 ## Overview
-CharcoalBiz is a full-stack sales management application for charcoal businesses. Its core purpose is to track sales, manage hotel customers, process payments, and generate statements. It features a comprehensive dashboard with real-time analytics and robust data import/export functionality, supporting multi-company operations. The vision is to provide a comprehensive tool for charcoal businesses to efficiently manage sales and customer relationships, offering significant market potential for improved operational efficiency.
+CharcoalBiz is a full-stack sales management application designed for charcoal businesses. Its purpose is to track sales, manage hotel customers, process payments, and generate statements. Key capabilities include a comprehensive dashboard with real-time analytics and robust data import/export functionality, supporting multi-company operations. The vision is to provide a comprehensive tool for charcoal businesses to efficiently manage their sales and customer relationships, enhancing their business vision and market potential.
 
 ## User Preferences
 Preferred communication style: Simple, everyday language.
@@ -9,43 +9,31 @@ Preferred measurement units: Kilograms (kg) for all charcoal quantities.
 Database policy: Never switch to in-memory storage, local storage, or any temporary storage solutions when database or app is not working - always fix the actual database connection problem unless explicitly asked to use alternative storage.
 
 ## System Architecture
-CharcoalBiz utilizes a full-stack architecture with a clear separation of concerns.
+CharcoalBiz follows a clear separation of concerns with a full-stack architecture, focusing on scalability, security, and performance.
 
 ### Frontend Architecture
-- **Frameworks**: React 18 with TypeScript, Vite, Wouter for routing.
-- **UI/UX**: Radix UI components, shadcn/ui styling, Tailwind CSS for styling, lucide-react for icons. Mobile-responsive design with collapsible navigation and accessible UI primitives.
+- **Framework & Build**: React 18 with TypeScript, Vite.
+- **UI/UX**: Radix UI components with shadcn/ui styling, Tailwind CSS for styling, Wouter for routing. Mobile-responsive design with collapsible navigation, consistent icon system (lucide-react), and accessible UI primitives. Color schemes and design approaches are managed via Tailwind CSS and Radix UI.
 - **State Management**: TanStack Query (React Query) for server state.
 - **Form Handling**: React Hook Form with Zod validation.
 
 ### Backend Architecture
-- **Runtime**: Node.js with Express.js REST API, TypeScript with ES modules.
+- **Runtime & Language**: Node.js with Express.js REST API, TypeScript with ES modules.
 - **Database**: PostgreSQL with Drizzle ORM.
-- **File Processing**: Multer for Excel file uploads with sophisticated pattern analysis (`server/import-analyzer.ts`).
+- **File Processing**: Multer for Excel file uploads with sophisticated pattern analysis via `server/import-analyzer.ts`.
 - **Session Management**: Express sessions with PostgreSQL store.
 - **System Design Choices**:
     - **Database Schema**: Comprehensive schema including Companies, Suppliers, Hotels, Sales, Payments, Purchases, and Purchase Payments, all with foreign key constraints.
-    - **API Structure**: Full CRUD operations for all entities, Dashboard analytics, and enhanced Import/Export with intelligent pattern detection and admin-only access controls.
-    - **Authentication System**: Session-based authentication, bcrypt for password hashing, user roles (admin, manager, operator, viewer), and an audit logging system.
-    - **Company Management**: Full frontend interface for CRUD operations, validation, and status management.
-    - **Automated Migration System**: Drizzle Kit for schema migrations, automatically generating SQL and integrating with Git hooks for current migrations including production features.
-    - **Production Readiness**: Emphasis on security (secure cookies, HTTP headers, input validation), performance (connection pooling, indexes, compression, query optimization), monitoring (structured logging, health checks), and reliability (graceful error handling).
+    - **API Structure**: Comprehensive CRUD operations for all entities, Dashboard analytics, and enhanced Import/Export functionality with intelligent pattern detection and admin-only access controls supporting multi-company operations.
+    - **Authentication System**: Session-based authentication with bcrypt for password hashing, user roles (admin, manager, operator, viewer), and an audit logging system.
+    - **Company Management**: Full frontend interface for CRUD operations on company entities, including validation and status management.
+    - **Automated Migration System**: Drizzle Kit for schema migrations, automating SQL generation and integration with Git hooks.
+    - **Production Readiness**: Focus on security (secure cookies, HTTP headers, input validation), performance (connection pooling, indexes, compression, query optimization), monitoring (structured logging, health checks), and reliability (graceful error handling, connection recovery).
 
 ### Data Flow
-- **Sales & Payments**: User input via forms, Zod validation, API interaction for record creation, real-time UI updates.
-- **Data Import**: Enhanced CSV/Excel import system with AI-powered pattern detection, multi-sheet analysis, intelligent column mapping, comprehensive validation, admin-only access, and a guided 4-step workflow (Upload → Analyze → Preview → Confirm → Results).
-- **Company Management**: Frontend interface with search, filtering, CRUD operations via modal forms, real-time statistics, and responsive design.
-
-### Authentication System
-- Session-based authentication (`express-session`).
-- Password hashing with `bcryptjs`.
-- User roles: admin, manager, operator, viewer with hierarchical permissions.
-- Audit trail for user actions.
-- Protected routes and user information display with logout.
-
-### Production Readiness Features
-- **Security**: httpOnly, secure, SameSite cookie configuration; HTTP security headers (XSS, CSRF); CORS configuration; request validation; production-safe error responses; admin-only access for imports; role-based access control.
-- **Performance**: Database connection pooling, performance indexes on frequently queried columns, Gzip compression, query optimization.
-- **Monitoring & Observability**: Structured logging, `/health` endpoint, error tracking, request correlation, database monitoring.
+- **Sales & Payment Processing**: User input via modal forms, Zod validation, API interaction, real-time UI updates via React Query. Payments linked to sales, status calculation based on amounts.
+- **Data Import**: Enhanced CSV/Excel import system with AI-powered pattern detection, multi-sheet analysis, intelligent column mapping, comprehensive validation, admin-only access control, and a guided 4-step workflow (Upload → Analyze → Preview → Confirm → Results).
+- **Company Management**: Complete frontend interface with search, filtering, CRUD operations via modal forms, real-time statistics, and responsive design.
 
 ## External Dependencies
 - **@neondatabase/serverless**: PostgreSQL connection for Neon Database.
@@ -59,7 +47,7 @@ CharcoalBiz utilizes a full-stack architecture with a clear separation of concer
 - **lucide-react**: Icon system.
 - **tailwindcss**: Utility-first CSS framework.
 - **class-variance-authority**: Type-safe variant handling.
-- **tsx**: TypeScript execution (development).
-- **esbuild**: JavaScript bundler (production).
-- **xlsx**: Excel file processing.
+- **tsx**: TypeScript execution for development.
+- **esbuild**: JavaScript bundler for production.
+- **xlsx**: Excel file processing for advanced import analysis.
 ```
