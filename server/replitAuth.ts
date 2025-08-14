@@ -24,14 +24,16 @@ function generateSessionSecret(): string {
 
 export function getSession() {
   const sessionTtl = 7 * 24 * 60 * 60 * 1000; // 1 week
-  
-  // Temporarily use memory store due to database connection issues
-  // TODO: Re-enable PostgreSQL session store once database is working
-  console.warn('⚠️  Using memory session store - sessions will not persist across restarts');
-  
+  const pgStore = connectPg(session);
+  const sessionStore = new pgStore({
+    conString: process.env.DATABASE_URL,
+    createTableIfMissing: true,
+    ttl: sessionTtl,
+    tableName: "sessions",
+  });
   return session({
     secret: generateSessionSecret(),
-    // Using default memory store temporarily
+    store: sessionStore,
     resave: false,
     saveUninitialized: false,
     cookie: {
