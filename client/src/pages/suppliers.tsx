@@ -14,7 +14,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { Plus, Edit2, Trash2, Truck, Phone, Mail, MapPin, Calendar, DollarSign, Package } from "lucide-react";
+import { Plus, Edit2, Trash2, Truck, Phone, Mail, MapPin, Calendar, DollarSign, Package, Search } from "lucide-react";
 import { format } from "date-fns";
 import { insertSupplierSchema, type InsertSupplier, type SupplierWithStats } from "@shared/schema";
 
@@ -222,6 +222,7 @@ export default function Suppliers() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingSupplier, setEditingSupplier] = useState<SupplierWithStats | undefined>();
   const [showInactive, setShowInactive] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -250,9 +251,13 @@ export default function Suppliers() {
     },
   });
 
-  const filteredSuppliers = suppliers.filter((supplier: SupplierWithStats) =>
-    showInactive || supplier.isActive
-  );
+  const filteredSuppliers = suppliers.filter((supplier: SupplierWithStats) => {
+    const matchesSearch = supplier.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         supplier.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (supplier.contactPerson && supplier.contactPerson.toLowerCase().includes(searchTerm.toLowerCase()));
+    const matchesStatus = showInactive || supplier.isActive;
+    return matchesSearch && matchesStatus;
+  });
 
   const handleEdit = (supplier: SupplierWithStats) => {
     setEditingSupplier(supplier);
@@ -304,25 +309,42 @@ export default function Suppliers() {
       />
       
       <div className="p-6">
+        {/* Search and Filters */}
+        <Card className="mb-6">
+          <CardContent className="p-4">
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <Input
+                  placeholder="Search suppliers by name, code, or contact person..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+              <div className="flex items-center space-x-2">
+                <Switch
+                  checked={showInactive}
+                  onCheckedChange={setShowInactive}
+                />
+                <Label htmlFor="show-inactive">Show Inactive</Label>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         <Card>
         <CardHeader>
-          <div className="flex justify-between items-center">
-            <CardTitle>Suppliers</CardTitle>
-            <div className="flex items-center space-x-2">
-              <Switch
-                checked={showInactive}
-                onCheckedChange={setShowInactive}
-              />
-              <Label htmlFor="show-inactive">Show Inactive</Label>
-            </div>
-          </div>
+          <CardTitle>Suppliers</CardTitle>
         </CardHeader>
         <CardContent>
           {filteredSuppliers.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
               <Truck className="w-12 h-12 mx-auto mb-4 text-gray-300" />
               <p>No suppliers found</p>
-              <p className="text-sm">Start by adding your first supplier</p>
+              <p className="text-sm">
+                {searchTerm || !showInactive ? "Try adjusting your search or filters" : "Start by adding your first supplier"}
+              </p>
             </div>
           ) : (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">

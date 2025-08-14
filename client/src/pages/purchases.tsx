@@ -13,7 +13,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { Plus, Edit2, Trash2, Calendar, Package, DollarSign, FileText } from "lucide-react";
+import { Plus, Edit2, Trash2, Calendar, Package, DollarSign, FileText, Search } from "lucide-react";
 import { format } from "date-fns";
 import { insertPurchaseSchema, type InsertPurchase, type PurchaseWithSupplier, type Company, type Supplier } from "@shared/schema";
 import { Header } from "@/components/layout/header";
@@ -307,6 +307,7 @@ export default function Purchases() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingPurchase, setEditingPurchase] = useState<PurchaseWithSupplier | undefined>();
   const [selectedCompany, setSelectedCompany] = useState<string>("all");
+  const [searchTerm, setSearchTerm] = useState("");
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -343,9 +344,13 @@ export default function Purchases() {
     },
   });
 
-  const filteredPurchases = purchases.filter((purchase: PurchaseWithSupplier) =>
-    selectedCompany === "all" || purchase.companyId === Number(selectedCompany)
-  );
+  const filteredPurchases = purchases.filter((purchase: PurchaseWithSupplier) => {
+    const matchesSearch = purchase.supplier.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         purchase.supplier.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (purchase.invoiceNumber && purchase.invoiceNumber.toLowerCase().includes(searchTerm.toLowerCase()));
+    const matchesCompany = selectedCompany === "all" || purchase.companyId === Number(selectedCompany);
+    return matchesSearch && matchesCompany;
+  });
 
   const handleEdit = (purchase: PurchaseWithSupplier) => {
     setEditingPurchase(purchase);
@@ -397,14 +402,22 @@ export default function Purchases() {
       />
       
       <div className="p-6">
-        <Card>
-        <CardHeader>
-          <div className="flex justify-between items-center">
-            <CardTitle>Purchase History</CardTitle>
-            <div className="flex space-x-2">
+        {/* Search and Filters */}
+        <Card className="mb-6">
+          <CardContent className="p-4">
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <Input
+                  placeholder="Search by supplier name, code, or invoice number..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
               <Select value={selectedCompany} onValueChange={setSelectedCompany}>
-                <SelectTrigger className="w-48">
-                  <SelectValue />
+                <SelectTrigger className="w-full sm:w-48">
+                  <SelectValue placeholder="Select company" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Companies</SelectItem>
@@ -416,14 +429,21 @@ export default function Purchases() {
                 </SelectContent>
               </Select>
             </div>
-          </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+        <CardHeader>
+          <CardTitle>Purchase History</CardTitle>
         </CardHeader>
         <CardContent>
           {filteredPurchases.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
               <Package className="w-12 h-12 mx-auto mb-4 text-gray-300" />
               <p>No purchases found</p>
-              <p className="text-sm">Start by adding your first purchase record</p>
+              <p className="text-sm">
+                {searchTerm || selectedCompany !== "all" ? "Try adjusting your search or filters" : "Start by adding your first purchase record"}
+              </p>
             </div>
           ) : (
             <div className="space-y-4">
