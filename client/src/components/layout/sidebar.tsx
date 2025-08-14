@@ -15,6 +15,7 @@ const navItems = [
   { path: "/payments", label: "Payments", icon: CreditCard },
   { path: "/hotels", label: "Hotel Management", icon: Building },
   { path: "/suppliers", label: "Supplier Management", icon: Truck },
+  { path: "/companies", label: "Company Management", icon: Building },
   { path: "/statements", label: "Statements", icon: FileText },
   { path: "/import", label: "Import Data", icon: Upload },
   { path: "/users", label: "User Management", icon: UsersIcon, adminOnly: true },

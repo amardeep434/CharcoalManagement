@@ -12,6 +12,7 @@ import Purchases from "@/pages/purchases";
 import Payments from "@/pages/payments";
 import Hotels from "@/pages/hotels";
 import Suppliers from "@/pages/suppliers";
+import Companies from "@/pages/companies";
 import Statements from "@/pages/statements";
 import Import from "@/pages/import";
 import Users from "@/pages/users";
@@ -47,6 +48,7 @@ function Router() {
           <Route path="/payments" component={Payments} />
           <Route path="/hotels" component={Hotels} />
           <Route path="/suppliers" component={Suppliers} />
+          <Route path="/companies" component={Companies} />
           <Route path="/statements" component={Statements} />
           <Route path="/import" component={Import} />
           <Route path="/users" component={Users} />
