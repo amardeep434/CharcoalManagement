@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Header } from "@/components/layout/header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -32,11 +33,11 @@ function SupplierModal({
     defaultValues: supplier ? {
       name: supplier.name,
       code: supplier.code,
-      contactPerson: supplier.contactPerson || "",
-      phone: supplier.phone || "",
-      email: supplier.email || "",
-      address: supplier.address || "",
-      taxId: supplier.taxId || "",
+      contactPerson: supplier.contactPerson ?? "",
+      phone: supplier.phone ?? "",
+      email: supplier.email ?? "",
+      address: supplier.address ?? "",
+      taxId: supplier.taxId ?? "",
       isActive: supplier.isActive,
     } : {
       name: "",
@@ -224,7 +225,7 @@ export default function Suppliers() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: suppliers = [], isLoading } = useQuery({
+  const { data: suppliers = [], isLoading } = useQuery<SupplierWithStats[]>({
     queryKey: ["/api/suppliers-with-stats"],
   });
 
@@ -271,26 +272,39 @@ export default function Suppliers() {
 
   if (isLoading) {
     return (
-      <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold text-gray-900">Supplier Management</h1>
+      <>
+        <Header
+          title="Supplier Management"
+          description="Manage supplier information and track purchase history"
+          actions={
+            <Button onClick={openCreateModal}>
+              <Plus className="w-4 h-4 mr-2" />
+              Add Supplier
+            </Button>
+          }
+        />
+        <div className="p-6">
+          <div className="text-center py-8">Loading suppliers...</div>
         </div>
-        <div className="text-center py-8">Loading suppliers...</div>
-      </div>
+      </>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold text-gray-900">Supplier Management</h1>
-        <Button onClick={openCreateModal}>
-          <Plus className="w-4 h-4 mr-2" />
-          Add Supplier
-        </Button>
-      </div>
-
-      <Card>
+    <>
+      <Header
+        title="Supplier Management"
+        description="Manage supplier information and track purchase history"
+        actions={
+          <Button onClick={openCreateModal}>
+            <Plus className="w-4 h-4 mr-2" />
+            Add Supplier
+          </Button>
+        }
+      />
+      
+      <div className="p-6">
+        <Card>
         <CardHeader>
           <div className="flex justify-between items-center">
             <CardTitle>Suppliers</CardTitle>
@@ -412,14 +426,15 @@ export default function Suppliers() {
         </CardContent>
       </Card>
 
-      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        {isModalOpen && (
-          <SupplierModal
-            supplier={editingSupplier}
-            onClose={() => setIsModalOpen(false)}
-          />
-        )}
-      </Dialog>
-    </div>
+        <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+          {isModalOpen && (
+            <SupplierModal
+              supplier={editingSupplier}
+              onClose={() => setIsModalOpen(false)}
+            />
+          )}
+        </Dialog>
+      </div>
+    </>
   );
 }
